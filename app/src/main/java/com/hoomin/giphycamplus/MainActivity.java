@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
+import com.hoomin.giphycamplus.util.ImageManager;
 import com.hoomin.giphycamplus.util.PermissionCheck;
 
 import java.io.File;
@@ -110,50 +111,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    //이미지 저장
-    private void saveImage(Bitmap bitmap, int nu) {
-//        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.giphy);
 
-        File diFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/GiphyCamPlus");
-        String giphyPath = diFile.getPath();
-        if (!diFile.exists()) {
-            Log.i("path2", "경로없음");
-            diFile.mkdirs();
-        } else {
-            Log.i("path2", "경로있음!" + diFile.getPath());
-        }
-
-
-        File file = new File(giphyPath, "Test2" + nu + ".jpg");
-        Log.i("path", file.getPath());
-        try {
-            file.createNewFile();
-            FileOutputStream outputStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, outputStream);
-            outputStream.close();
-        } catch (IOException e) {
-            Log.e("file", "fileError");
-            e.printStackTrace();
-        }
-        FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(giphyPath + "/GifTest.gif");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (fos != null) {
-            AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
-            gifEncoder.start(fos);
-            if (gifEncoder.addFrame(getBitmapFromView(activity_main))) {
-                Log.i("addFrame", "성공");
-                Toast.makeText(this, "addFrame성공", Toast.LENGTH_SHORT).show();
-            } else {
-                Log.i("addFrame", "실패");
-            }
-            gifEncoder.finish();
-        }
-    }
 
     //view에서 비트맵 뽑기(테스트중)
     public static Bitmap getBitmapFromView(View view) {

@@ -371,10 +371,12 @@ public class GifDecoder {
                             break;
                         case 0xff: // application extension
                             readBlock();
-                            String app = "";
+                            StringBuffer appBuf = new StringBuffer();
                             for (int i = 0; i < 11; i++) {
-                                app += (char) block[i];
+                                appBuf.append((char) block[i]);
+//                                app += (char) block[i];
                             }
+                            String app = appBuf.toString();
                             if (app.equals("NETSCAPE2.0")) {
                                 readNetscapeExt();
                             } else {

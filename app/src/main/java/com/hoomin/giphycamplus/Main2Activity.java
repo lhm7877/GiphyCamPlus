@@ -1,16 +1,17 @@
 package com.hoomin.giphycamplus;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 
-import com.hoomin.giphycamplus.util.GifDecoder;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedList;
-import java.util.Queue;
+import com.bumptech.glide.Glide;
+import com.hoomin.giphycamplus.util.ImageManager;
+import com.hoomin.giphycamplus.util.Sticker;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,31 +21,6 @@ public class Main2Activity extends AppCompatActivity {
     protected ImageView iv_split_0;
     @BindView(R.id.iv_split_1)
     protected ImageView iv_split_1;
-    @BindView(R.id.iv_split_2)
-    protected ImageView iv_split_2;
-    @BindView(R.id.iv_split_3)
-    protected ImageView iv_split_3;
-    @BindView(R.id.iv_split_4)
-    protected ImageView iv_split_4;
-    @BindView(R.id.iv_split_5)
-    protected ImageView iv_split_5;
-    @BindView(R.id.iv_split_6)
-    protected ImageView iv_split_6;
-    @BindView(R.id.iv_split_7)
-    protected ImageView iv_split_7;
-    @BindView(R.id.iv_split_8)
-    protected ImageView iv_split_8;
-    @BindView(R.id.iv_split_9)
-    protected ImageView iv_split_9;
-    @BindView(R.id.iv_split_10)
-    protected ImageView iv_split_10;
-    @BindView(R.id.iv_split_11)
-    protected ImageView iv_split_11;
-    @BindView(R.id.iv_split_12)
-    protected ImageView iv_split_12;
-    @BindView(R.id.iv_split_13)
-    protected ImageView iv_split_13;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,45 +28,36 @@ public class Main2Activity extends AppCompatActivity {
         setContentView(R.layout.activity_main2);
         ButterKnife.bind(this);
 
-        GifDecoder gifDecoder = new GifDecoder();
-        gifDecoder.read(getInputStreamfromGif("giphy.gif"));
-        int numOfFrame = gifDecoder.getFrameCount();
+        Sticker sticker = new Sticker(this,"giphy.gif");
 
-        Queue<Bitmap> gifFrames = new LinkedList<>();
+        Bitmap baseBitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.boostcamp);
 
-        for (int i = 0; i < numOfFrame; i++) {
-            gifFrames.offer(gifDecoder.getFrame(i));
-        }
-
-
-        ImageView[] imageViews = {
-                iv_split_0,
-                iv_split_1,
-                iv_split_2,
-                iv_split_3,
-                iv_split_4,
-                iv_split_5,
-                iv_split_6,
-                iv_split_7,
-                iv_split_8,
-                iv_split_9,
-                iv_split_10,
-                iv_split_11,
-                iv_split_12,
-                iv_split_13
-        };
-
-        for (int i = 0; i < numOfFrame; i++) {
-            imageViews[i].setImageBitmap(gifFrames.poll());
-        }
+        new mergeBitmapTask(this,sticker).execute(baseBitmap);
     }
 
-    private InputStream getInputStreamfromGif(String path) {
-        InputStream stream = null;
-        try {
-            stream = getAssets().open(path);
-        } catch (IOException e) {
+    private class mergeBitmapTask extends AsyncTask<Bitmap, Void, byte[]>{
+        private Sticker mSticker;
+        private Context mContext;
+        private ImageManager mImageManager;
+        mergeBitmapTask(Context context,Sticker sticker){
+            this.mContext = context;
+            this.mSticker = sticker;
+            mImageManager = new ImageManager();
         }
-        return stream;
+        @Override
+        protected byte[] doInBackground(Bitmap... params) {
+            Log.i("async","doinback");
+            return mImageManager.mergeBitmapAndSticker(params[0],mSticker);
+        }
+
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+            mImageManager.saveImage(bytes);
+            Glide.with(mContext)
+                    .load(bytes)
+                    .asGif()
+                    .into(iv_split_0);
+        }
     }
 }
