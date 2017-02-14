@@ -3,9 +3,13 @@ package com.hoomin.giphycamplus.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.hoomin.giphycamplus.Main2Activity;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,12 +55,13 @@ public class ImageManager {
     }
 
     public byte[] mergeBitmapAndSticker(Bitmap b1, Sticker sticker) {
-        Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.ARGB_8888);
+//        Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.ARGB_8888);
 //        Canvas canvas = new Canvas(mBitmap);
 
 //        int adWDelta = (int)(b1.getWidth() - b2.getWidth())/2 ;
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;
 
+//        b1.
 
         for(int i =0; i<sticker.getFrameCount(); i++){
             resultBitmapQ.offer(mergeBitmapAndBitmap(b1,sticker.gifDecoder.getFrame(i)));
@@ -85,7 +90,7 @@ public class ImageManager {
         if (!diFile.exists()) {
             diFile.mkdirs();
         }
-        File file = new File(giphyPath, "Test3.gif");
+        File file = new File(giphyPath, "Test4.gif");
         Log.i("path", file.getPath());
 
         try {
@@ -98,7 +103,32 @@ public class ImageManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    public void saveImage2(Context context,Sticker sticker,Bitmap baseBitmap){
+
+        new mergeBitmapTask(sticker).execute(baseBitmap);
+    }
+
+    public class mergeBitmapTask extends AsyncTask<Bitmap, Void, byte[]> {
+        private Sticker mSticker;
+        private Context mContext;
+        private ImageManager mImageManager;
+        public mergeBitmapTask(Sticker sticker){
+            this.mSticker = sticker;
+            mImageManager = new ImageManager();
+        }
+        @Override
+        protected byte[] doInBackground(Bitmap... params) {
+            Log.i("async","doinback");
+            return mImageManager.mergeBitmapAndSticker(params[0],mSticker);
+        }
+
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+            mImageManager.saveImage(bytes);
+        }
     }
 
 }

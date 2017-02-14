@@ -2,18 +2,19 @@ package com.hoomin.giphycamplus;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.os.Environment;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -21,12 +22,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.gifencoder.AnimatedGifEncoder;
-import com.hoomin.giphycamplus.util.ImageManager;
+import com.hoomin.giphycamplus.result.ResultActivity;
 import com.hoomin.giphycamplus.util.PermissionCheck;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -48,6 +47,10 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.btn_save)
     protected Button btn_save;
 
+    @BindView(R.id.btn_result)
+    protected Button btn_result;
+
+    private String albumImagePath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,24 +58,65 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        init();
         Glide.with(this)
                 .load(R.drawable.boostcamp)
                 .into(iv_main);
 
-//        Glide.with(this)
-//                .load(R.drawable.giphy)
-//                .asGif()
-//                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-//                .into(iv_gif);
+    }
 
+    private void init() {
     }
 
 
+    @OnClick(R.id.btn_result)
+    void clickResult() {
+        doTakeAlbumAction();
+    }
 
-    @OnClick(R.id.btn_split) void clickSplit(){
-        Intent intent = new Intent(this,Main2Activity.class);
+    @OnClick(R.id.btn_split)
+    void clickSplit() {
+        Intent intent = new Intent(this, Main2Activity.class);
         startActivity(intent);
     }
+
+    public void doTakeAlbumAction() // 앨범에서 이미지 가져오기
+    {
+        // 앨범 호출
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 0: {
+                Uri uri = data.getData();
+//                albumImagePath = uri.getPath();
+                File imageFile = new File(getRealPathFromURI(uri));
+                Intent intent = new Intent(this, ResultActivity.class);
+                intent.putExtra("baseImage",imageFile);
+                startActivity(intent);
+            }
+        }
+    }
+    private String getRealPathFromURI(Uri contentURI) {
+        String result;
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = contentURI.getPath();
+        } else {
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
+        }
+        return result;
+    }
+
+
 
     //권한 요청 결과
     @Override
@@ -107,10 +151,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "저장", Toast.LENGTH_SHORT).show();
         }
     }
-
-
-
-
 
 
     //view에서 비트맵 뽑기(테스트중)
