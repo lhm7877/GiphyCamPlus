@@ -1,4 +1,4 @@
-package com.hoomin.giphycamplus.util;
+package com.hoomin.giphycamplus.base.util;
 
 import java.io.IOException;
 import java.io.OutputStream;

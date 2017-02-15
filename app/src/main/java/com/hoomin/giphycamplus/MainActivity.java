@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.hoomin.giphycamplus.result.ResultActivity;
-import com.hoomin.giphycamplus.util.PermissionCheck;
+import com.hoomin.giphycamplus.base.util.PermissionCheck;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -74,11 +74,6 @@ public class MainActivity extends AppCompatActivity {
         doTakeAlbumAction();
     }
 
-    @OnClick(R.id.btn_split)
-    void clickSplit() {
-        Intent intent = new Intent(this, Main2Activity.class);
-        startActivity(intent);
-    }
 
     public void doTakeAlbumAction() // 앨범에서 이미지 가져오기
     {

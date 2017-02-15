@@ -2,9 +2,8 @@ package com.hoomin.giphycamplus.result.model;
 
 import android.util.Log;
 
-import com.hoomin.giphycamplus.util.Define;
-
-import java.util.List;
+import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
+import com.hoomin.giphycamplus.base.util.Define;
 
 import retrofit2.Call;
 import retrofit2.Callback;

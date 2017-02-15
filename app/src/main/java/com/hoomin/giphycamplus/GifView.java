@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.hoomin.giphycamplus.util.GifDecoder;
+import com.hoomin.giphycamplus.base.util.GifDecoder;
 
 import java.io.InputStream;
 

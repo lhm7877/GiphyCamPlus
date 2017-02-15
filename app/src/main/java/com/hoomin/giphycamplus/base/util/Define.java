@@ -1,4 +1,4 @@
-package com.hoomin.giphycamplus.util;
+package com.hoomin.giphycamplus.base.util;
 
 /**
  * Created by Hooo on 2017-02-08.

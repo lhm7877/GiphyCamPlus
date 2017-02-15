@@ -1,4 +1,4 @@
-package com.hoomin.giphycamplus.result.model;
+package com.hoomin.giphycamplus.base.domain;
 
 import java.util.List;
 

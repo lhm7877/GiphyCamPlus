@@ -1,4 +1,4 @@
-package com.hoomin.giphycamplus.util;
+package com.hoomin.giphycamplus.base.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
