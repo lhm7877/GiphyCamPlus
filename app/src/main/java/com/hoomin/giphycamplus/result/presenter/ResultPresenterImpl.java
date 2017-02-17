@@ -1,16 +1,16 @@
 package com.hoomin.giphycamplus.result.presenter;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.content.Intent;
 import android.util.Log;
 
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
-import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
 import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
 
 import java.io.File;
+
+import retrofit2.Response;
 
 
 /**
@@ -21,6 +21,7 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     private ResultPresenter.View view;
     private GiphyModel giphyModel;
     private ImageManager imageManager;
+    private Response<?> response;
 
     @Override
     public void attachView(ResultPresenter.View view) {
@@ -58,14 +59,25 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void update(GiphyRepoDTO models) {
-        Log.i("mylog", "업데이트됨1");
-        if (models == null) {
+    public void loadSeletedSticker(Intent data) {
+//        view.
+//        giphyModel.callSelectedSticker(data);
+        view.addSticker(data);
+    }
+
+    @Override
+    public void update(Response<?> response) {
+        if (response.body() == null) {
             return;
-        }
-        if (models.getData() != null) {
-            Log.i("loadSticker", "models.getData()널아님");
-            view.updateReaction(models.getData().get(0).getImages().getFixed_height().getUrl());
+        }else if (response.body() != null) {
+            view.updateReaction(response);
+            this.response = response;
         }
     }
+
+    @Override
+    public void updateSelectedSticker() {
+
+    }
+
 }

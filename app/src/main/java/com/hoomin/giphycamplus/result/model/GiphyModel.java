@@ -1,10 +1,15 @@
 package com.hoomin.giphycamplus.result.model;
 
+import android.content.Intent;
 import android.util.Log;
 
+import com.hoomin.giphycamplus.MyApplication;
+import com.hoomin.giphycamplus.R;
+import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
 import com.hoomin.giphycamplus.base.util.Define;
 
+import io.realm.Realm;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -21,7 +26,7 @@ public class GiphyModel {
     private GiphyRepoDTO giphyRepoDTOList = null;
     //    private GiphyDataDTO GiphyRepoDTO = null;
     private GiphyModel.GiphyModelDataChange modelDataChange;
-
+private Realm mRelam;
     interface GiphyRepoService {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://api.giphy.com/")
@@ -35,7 +40,8 @@ public class GiphyModel {
     }
 
     public interface GiphyModelDataChange {
-        void update(GiphyRepoDTO models);
+        void update(Response<?> response);
+        void updateSelectedSticker();
     }
 
     public void setOnChangeListener(GiphyModel.GiphyModelDataChange dataChange) {
@@ -44,7 +50,9 @@ public class GiphyModel {
 
     public void callSticker() {
         GiphyModel.GiphyRepoService giphyRepoService = GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
-        Call<GiphyRepoDTO> call = giphyRepoService.repoStickerList("cat", Define.GIPHY_API_KEY);
+        Call<GiphyRepoDTO> call = giphyRepoService.repoStickerList(
+                MyApplication.getMyContext().getResources().getString(R.string.sticker_effect)
+                , Define.GIPHY_API_KEY);
         call.enqueue(dataCallBackListener);
     }
 
@@ -52,14 +60,16 @@ public class GiphyModel {
         @Override
         public void onResponse(Call<GiphyRepoDTO> call, Response<GiphyRepoDTO> response) {
             if (response.isSuccessful()) {
-                Log.i("loadSticker","response성공");
-                giphyRepoDTOList = response.body();
-                Log.i("loadSticker", String.valueOf(modelDataChange));
+                mRelam = Realm.getDefaultInstance();
+                mRelam.beginTransaction();
+                mRelam.copyToRealm(response.body());
+                mRelam.commitTransaction();
+
                 if (modelDataChange != null) {
-                    Log.i("loadSticker","modelDataChange 널 아님");
-                    modelDataChange.update(giphyRepoDTOList);
+                    modelDataChange.update(response);
                 }
             }
+//            Log.i("intent","response 실패");
         }
 
         @Override
@@ -67,4 +77,8 @@ public class GiphyModel {
 
         }
     };
+
+    public void callSelectedSticker(Intent position){
+        modelDataChange.updateSelectedSticker();
+    }
 }

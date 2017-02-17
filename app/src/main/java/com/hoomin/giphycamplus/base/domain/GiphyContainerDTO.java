@@ -1,15 +1,26 @@
 package com.hoomin.giphycamplus.base.domain;
 
+import java.io.Serializable;
+
 import io.realm.RealmObject;
 
 /**
  * Created by Hooo on 2017-02-13.
  */
 
-public class GiphyContainerDTO extends RealmObject{
+public class GiphyContainerDTO extends RealmObject implements Serializable {
     private GiphyImageDTO fixed_height;
     private GiphyImageDTO fixed_height_still;
     private GiphyImageDTO original;
+    private GiphyImageDTO fixed_height_downsampled;
+
+    public GiphyImageDTO getFixed_height_downsampled() {
+        return fixed_height_downsampled;
+    }
+
+    public void setFixed_height_downsampled(GiphyImageDTO fixed_height_downsampled) {
+        this.fixed_height_downsampled = fixed_height_downsampled;
+    }
 
     public GiphyImageDTO getFixed_height_still() {
         return fixed_height_still;

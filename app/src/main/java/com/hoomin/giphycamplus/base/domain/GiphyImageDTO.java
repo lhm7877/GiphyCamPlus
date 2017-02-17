@@ -1,12 +1,14 @@
 package com.hoomin.giphycamplus.base.domain;
 
+import java.io.Serializable;
+
 import io.realm.RealmObject;
 
 /**
  * Created by Hooo on 2017-02-13.
  */
 
-public class GiphyImageDTO extends RealmObject{
+public class GiphyImageDTO extends RealmObject implements Serializable {
     private String url;
     private String width;
     private String height;

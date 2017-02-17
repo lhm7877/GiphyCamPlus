@@ -22,7 +22,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.hoomin.giphycamplus.result.ResultActivity;
+import com.hoomin.giphycamplus.result.view.ResultActivity;
 import com.hoomin.giphycamplus.base.util.PermissionCheck;
 
 import java.io.File;
@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Realm;
 
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.iv_main)
@@ -58,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+
         init();
         Glide.with(this)
                 .load(R.drawable.boostcamp)
@@ -66,14 +68,38 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
+        requestPermission();
     }
-
 
     @OnClick(R.id.btn_result)
     void clickResult() {
         doTakeAlbumAction();
     }
 
+    //테스트 저장 버튼
+    @OnClick(R.id.btn_save)
+    void clickSave() {
+        Toast.makeText(MainActivity.this, "저장 클릭", Toast.LENGTH_SHORT).show();
+        int permissionStorage = ContextCompat.checkSelfPermission(getApplicationContext(),
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permissionStorage == PackageManager.PERMISSION_DENIED) {
+            PermissionCheck.checkPermission(this);
+        } else {
+            Toast.makeText(this, "저장", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestPermission(){
+        int permissionStorage = ContextCompat.checkSelfPermission(getApplicationContext(),
+                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (permissionStorage == PackageManager.PERMISSION_DENIED) {
+            PermissionCheck.checkPermission(this);
+        } else {
+            Toast.makeText(this, "권한있음", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     public void doTakeAlbumAction() // 앨범에서 이미지 가져오기
     {
@@ -89,7 +115,6 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case 0: {
                 Uri uri = data.getData();
-//                albumImagePath = uri.getPath();
                 File imageFile = new File(getRealPathFromURI(uri));
                 Intent intent = new Intent(this, ResultActivity.class);
                 intent.putExtra("baseImage",imageFile);
@@ -97,20 +122,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    private String getRealPathFromURI(Uri contentURI) {
-        String result;
-        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
-        if (cursor == null) { // Source is Dropbox or other similar local file path
-            result = contentURI.getPath();
-        } else {
-            cursor.moveToFirst();
-            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-            result = cursor.getString(idx);
-            cursor.close();
-        }
-        return result;
-    }
-
 
 
     //권한 요청 결과
@@ -133,93 +144,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //테스트 저장 버튼
-    @OnClick(R.id.btn_save)
-    void clickSave() {
-        Toast.makeText(MainActivity.this, "저장 클릭", Toast.LENGTH_SHORT).show();
-        int permissionStorage = ContextCompat.checkSelfPermission(getApplicationContext(),
-                android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
-        if (permissionStorage == PackageManager.PERMISSION_DENIED) {
-            PermissionCheck.checkPermission(this);
+    private String getRealPathFromURI(Uri contentURI) {
+        String result;
+        Cursor cursor = getContentResolver().query(contentURI, null, null, null, null);
+        if (cursor == null) { // Source is Dropbox or other similar local file path
+            result = contentURI.getPath();
         } else {
-            Toast.makeText(this, "저장", Toast.LENGTH_SHORT).show();
+            cursor.moveToFirst();
+            int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
+            result = cursor.getString(idx);
+            cursor.close();
         }
-    }
-
-
-    //view에서 비트맵 뽑기(테스트중)
-    public static Bitmap getBitmapFromView(View view) {
-        //Define a bitmap with the same size as the view
-        Bitmap returnedBitmap = Bitmap.createBitmap(view.getMeasuredWidth(), view.getMeasuredHeight(), Bitmap.Config.ARGB_8888);
-        //Bind a canvas to it
-        Canvas canvas = new Canvas(returnedBitmap);
-        //Get the view's background
-        Drawable bgDrawable = view.getBackground();
-        if (bgDrawable != null)
-            //has background drawable, then draw it on the canvas
-            bgDrawable.draw(canvas);
-        else
-            //does not have background drawable, then draw white background on the canvas
-            canvas.drawColor(Color.WHITE);
-        // draw the view on the canvas
-        view.draw(canvas);
-        //return the bitmap
-        return returnedBitmap;
-    }
-
-    public void SaveBitmapToFileCache(Bitmap bitmap, String strFilePath, String filename) {
-
-        File file = new File(strFilePath);
-
-        if (!file.exists())
-            file.mkdirs();
-
-        File fileCacheItem = new File(strFilePath + filename);
-        OutputStream out = null;
-
-        try {
-            fileCacheItem.createNewFile();
-            out = new FileOutputStream(fileCacheItem);
-
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                out.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public static Bitmap overlay(Bitmap bmp1, Bitmap bmp2) {
-        Bitmap bmOverlay = Bitmap.createBitmap(bmp1.getWidth(), bmp1.getHeight(), bmp1.getConfig());
-        Canvas canvas = new Canvas(bmOverlay);
-        canvas.drawBitmap(bmp1, 0, 0, null);
-        canvas.drawBitmap(bmp2, 0, 0, null);
-        return bmOverlay;
-    }
-
-    private Bitmap combineImage(Bitmap first, Bitmap second, boolean isVerticalMode) {
-        BitmapFactory.Options option = new BitmapFactory.Options();
-        option.inDither = true;
-        option.inPurgeable = true;
-        Bitmap bitmap = null;
-        if (isVerticalMode)
-            bitmap = Bitmap.createScaledBitmap(first, first.getWidth(), first.getHeight() + second.getHeight(), true);
-        else
-            bitmap = Bitmap.createScaledBitmap(first, first.getWidth() + second.getWidth(), first.getHeight(), true);
-        Paint p = new Paint();
-        p.setDither(true);
-        p.setFlags(Paint.ANTI_ALIAS_FLAG);
-        Canvas c = new Canvas(bitmap);
-        c.drawBitmap(first, 0, 0, p);
-        if (isVerticalMode) c.drawBitmap(second, 0, first.getHeight(), p);
-        else c.drawBitmap(second, first.getWidth(), 0, p);
-        first.recycle();
-        second.recycle();
-        return bitmap;
+        return result;
     }
 }
