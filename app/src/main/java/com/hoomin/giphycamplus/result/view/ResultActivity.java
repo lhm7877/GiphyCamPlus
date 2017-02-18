@@ -1,6 +1,8 @@
 package com.hoomin.giphycamplus.result.view;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,7 +18,10 @@ import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
 import com.hoomin.giphycamplus.stickerList.StickerListActivity;
+import com.hoomin.giphycamplus.viewmodel.Layer;
 import com.hoomin.giphycamplus.widget.MotionView;
+import com.hoomin.giphycamplus.widget.TextEditorDialogFragment;
+import com.hoomin.giphycamplus.widget.entity.ImageEntity;
 import com.hoomin.giphycamplus.widget.entity.MotionEntity;
 import com.hoomin.giphycamplus.widget.entity.TextEntity;
 
@@ -47,7 +52,6 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected View textEntityEditPanel;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +68,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
         albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
         Glide.with(this).load(albumImageFile).into(iv_base);
-        mv_result.setMotionViewCallback(    );
+        mv_result.setMotionViewCallback(motionViewCallback);
     }
 
     @OnClick(R.id.ibtn_save)
@@ -82,12 +86,22 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     @Override
     public void updateReaction(Response<?> response) {
         Intent intent = new Intent(this, StickerListActivity.class);
-        startActivityForResult(intent,SELECT_STICKER_REQUEST_CODE);
+        startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
 //        startActivity(intent);
     }
 
     @Override
     public void addSticker(Intent data) {
+        mv_result.post(new Runnable() {
+            @Override
+            public void run() {
+                Layer layer = new Layer();
+                Bitmap pica = BitmapFactory.decodeResource(getResources(), R.drawable.giphy);
+
+                ImageEntity entity = new ImageEntity(layer, pica, mv_result.getWidth(), mv_result.getHeight());
+                mv_result.addEntityAndPosition(entity);
+            }
+        });
         ImageView iv = new ImageView(this);
 
     }
@@ -100,9 +114,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
                 if (data != null) {
                     resultPresenter.loadSeletedSticker(data);
                 }
-
             }
-
         }
     }
 
@@ -110,11 +122,11 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
         @Override
         public void onEntitySelected(@Nullable MotionEntity entity) {
-            if (entity instanceof TextEntity) {
-                textEntityEditPanel.setVisibility(View.VISIBLE);
-            } else {
-                textEntityEditPanel.setVisibility(View.GONE);
-            }
+//            if (entity instanceof TextEntity) {
+//                textEntityEditPanel.setVisibility(View.VISIBLE);
+//            } else {
+//                textEntityEditPanel.setVisibility(View.GONE);
+//            }
         }
 
         @Override
@@ -122,3 +134,20 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
             startTextEntityEditing();
         }
     };
+
+    private void startTextEntityEditing() {
+        TextEntity textEntity = currentTextEntity();
+        if (textEntity != null) {
+            TextEditorDialogFragment fragment = TextEditorDialogFragment.getInstance(textEntity.getLayer().getText());
+            fragment.show(getFragmentManager(), TextEditorDialogFragment.class.getName());
+        }
+    }
+    @Nullable
+    private TextEntity currentTextEntity() {
+        if (mv_result != null && mv_result.getSelectedEntity() instanceof TextEntity) {
+            return ((TextEntity) mv_result.getSelectedEntity());
+        } else {
+            return null;
+        }
+    }
+}
