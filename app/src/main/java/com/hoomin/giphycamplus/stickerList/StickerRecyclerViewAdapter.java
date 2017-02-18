@@ -67,7 +67,7 @@ public class StickerRecyclerViewAdapter extends RecyclerView.Adapter<StickerView
                 public boolean onLongClick(View v) {
                     Log.i("selectImage", "롱클릭");
                     Intent intent = new Intent();
-                    intent.putExtra("imageUrl", mResults.get(mPosition).getImages().getFixed_height().getUrl());
+                    intent.putExtra("imagePosition", mPosition);
 //                intent.putExtra("LocationX",(v.getX()-(v.getWidth()/2)));
 //                intent.putExtra("LocationY",(v.getY()-(v.getWidth()/2)));
                     int[] pos = new int[2];

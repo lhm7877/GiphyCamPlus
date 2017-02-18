@@ -1,12 +1,15 @@
 package com.hoomin.giphycamplus.result.presenter;
 
-import android.content.Intent;
 import android.util.Log;
 
 import com.hoomin.giphycamplus.MyApplication;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
+import com.hoomin.giphycamplus.viewmodel.Layer;
+import com.hoomin.giphycamplus.widget.MotionView;
+import com.hoomin.giphycamplus.widget.entity.ImageEntity;
 
 import java.io.File;
 
@@ -59,25 +62,38 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void loadSeletedSticker(Intent data) {
+    public void loadSeletedSticker(int data) {
 //        view.
-//        giphyModel.callSelectedSticker(data);
-        view.addSticker(data);
+        giphyModel.callSelectedSticker(data);
+//        view.addSticker(data);
     }
 
     @Override
     public void update(Response<?> response) {
         if (response.body() == null) {
             return;
-        }else if (response.body() != null) {
+        } else if (response.body() != null) {
             view.updateReaction(response);
             this.response = response;
         }
     }
 
     @Override
-    public void updateSelectedSticker() {
-
+    public void updateSelectedSticker(final GiphyImageDTO giphyImageDTOs) {
+        final MotionView mv_result = view.getMv_result();
+        mv_result.post(new Runnable() {
+            @Override
+            public void run() {
+                Layer layer = new Layer();
+                ImageEntity entity = new ImageEntity(
+                        layer,
+                        giphyImageDTOs,
+                        Integer.valueOf(mv_result.getWidth()),
+                        Integer.valueOf(mv_result.getHeight())
+                );
+                mv_result.addEntityAndPosition(entity);
+            }
+        });
     }
 
 }

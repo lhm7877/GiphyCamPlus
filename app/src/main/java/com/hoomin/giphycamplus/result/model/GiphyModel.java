@@ -6,10 +6,12 @@ import android.util.Log;
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
 import com.hoomin.giphycamplus.base.util.Define;
 
 import io.realm.Realm;
+import io.realm.RealmResults;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -26,7 +28,8 @@ public class GiphyModel {
     private GiphyRepoDTO giphyRepoDTOList = null;
     //    private GiphyDataDTO GiphyRepoDTO = null;
     private GiphyModel.GiphyModelDataChange modelDataChange;
-private Realm mRelam;
+    private Realm mRealm;
+
     interface GiphyRepoService {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://api.giphy.com/")
@@ -41,7 +44,8 @@ private Realm mRelam;
 
     public interface GiphyModelDataChange {
         void update(Response<?> response);
-        void updateSelectedSticker();
+
+        void updateSelectedSticker(GiphyImageDTO giphyImageDTOs);
     }
 
     public void setOnChangeListener(GiphyModel.GiphyModelDataChange dataChange) {
@@ -60,10 +64,10 @@ private Realm mRelam;
         @Override
         public void onResponse(Call<GiphyRepoDTO> call, Response<GiphyRepoDTO> response) {
             if (response.isSuccessful()) {
-                mRelam = Realm.getDefaultInstance();
-                mRelam.beginTransaction();
-                mRelam.copyToRealm(response.body());
-                mRelam.commitTransaction();
+                mRealm = Realm.getDefaultInstance();
+                mRealm.beginTransaction();
+                mRealm.copyToRealm(response.body());
+                mRealm.commitTransaction();
 
                 if (modelDataChange != null) {
                     modelDataChange.update(response);
@@ -78,7 +82,8 @@ private Realm mRelam;
         }
     };
 
-    public void callSelectedSticker(Intent position){
-        modelDataChange.updateSelectedSticker();
+    public void callSelectedSticker(int position) {
+        RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+        modelDataChange.updateSelectedSticker(giphyDataDTOs.get(position).getImages().getOriginal());
     }
 }

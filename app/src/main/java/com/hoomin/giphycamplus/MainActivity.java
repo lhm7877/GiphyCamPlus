@@ -82,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(MainActivity.this, "저장 클릭", Toast.LENGTH_SHORT).show();
         int permissionStorage = ContextCompat.checkSelfPermission(getApplicationContext(),
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
         if (permissionStorage == PackageManager.PERMISSION_DENIED) {
             PermissionCheck.checkPermission(this);
         } else {

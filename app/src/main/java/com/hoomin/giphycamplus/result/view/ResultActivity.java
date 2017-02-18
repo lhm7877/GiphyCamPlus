@@ -15,6 +15,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.hoomin.giphycamplus.R;
+import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
 import com.hoomin.giphycamplus.stickerList.StickerListActivity;
@@ -30,6 +32,8 @@ import java.io.File;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.realm.Realm;
+import io.realm.RealmResults;
 import retrofit2.Response;
 
 public class ResultActivity extends AppCompatActivity implements ResultPresenter.View {
@@ -51,7 +55,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     private File albumImageFile;
     protected View textEntityEditPanel;
 
-
+    private Realm mRealm;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -65,10 +69,11 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     private void init() {
         resultPresenter = new ResultPresenterImpl();
         resultPresenter.attachView(this);
-
         albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
         Glide.with(this).load(albumImageFile).into(iv_base);
         mv_result.setMotionViewCallback(motionViewCallback);
+        mRealm = Realm.getDefaultInstance();
+
     }
 
     @OnClick(R.id.ibtn_save)
@@ -91,18 +96,22 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     }
 
     @Override
-    public void addSticker(Intent data) {
+    public void addSticker(final Intent data) {
+
         mv_result.post(new Runnable() {
             @Override
             public void run() {
+//                String url = data.getStringExtra("imageUrl");
+
+
                 Layer layer = new Layer();
                 Bitmap pica = BitmapFactory.decodeResource(getResources(), R.drawable.giphy);
 
-                ImageEntity entity = new ImageEntity(layer, pica, mv_result.getWidth(), mv_result.getHeight());
-                mv_result.addEntityAndPosition(entity);
+//                ImageEntity entity = new ImageEntity(layer, url, mv_result.getWidth(), mv_result.getHeight());
+//                mv_result.addEntityAndPosition(entity);
             }
         });
-        ImageView iv = new ImageView(this);
+//        ImageView iv = new ImageView(this);
 
     }
 
@@ -112,7 +121,9 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_STICKER_REQUEST_CODE) {
                 if (data != null) {
-                    resultPresenter.loadSeletedSticker(data);
+                    int position = data.getIntExtra("imagePosition",0);
+
+                    resultPresenter.loadSeletedSticker(position);
                 }
             }
         }
@@ -149,5 +160,10 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         } else {
             return null;
         }
+    }
+
+    @Override
+    public MotionView getMv_result(){
+        return mv_result;
     }
 }
