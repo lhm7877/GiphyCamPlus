@@ -12,22 +12,19 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 
-import team.uptech.motionviews.utils.FontProvider;
-import team.uptech.motionviews.viewmodel.TextLayer;
+import com.hoomin.giphycamplus.viewmodel.TextLayer;
+
 
 public class TextEntity extends MotionEntity {
 
     private final TextPaint textPaint;
-    private final FontProvider fontProvider;
     @Nullable
     private Bitmap bitmap;
 
     public TextEntity(@NonNull TextLayer textLayer,
                       @IntRange(from = 1) int canvasWidth,
-                      @IntRange(from = 1) int canvasHeight,
-                      @NonNull FontProvider fontProvider) {
+                      @IntRange(from = 1) int canvasHeight) {
         super(textLayer, canvasWidth, canvasHeight);
-        this.fontProvider = fontProvider;
 
         this.textPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
 
@@ -92,7 +89,6 @@ public class TextEntity extends MotionEntity {
         textPaint.setStyle(Paint.Style.FILL);
         textPaint.setTextSize(textLayer.getFont().getSize() * canvasWidth);
         textPaint.setColor(textLayer.getFont().getColor());
-        textPaint.setTypeface(fontProvider.getTypeface(textLayer.getFont().getTypeface()));
 
         // drawing text guide : http://ivankocijan.xyz/android-drawing-multiline-text-on-canvas/
         // Static layout which will be drawn on canvas

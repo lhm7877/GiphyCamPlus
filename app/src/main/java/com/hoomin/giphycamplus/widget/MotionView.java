@@ -19,14 +19,14 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.almeros.android.multitouch.MoveGestureDetector;
-import com.almeros.android.multitouch.RotateGestureDetector;
+
+import com.hoomin.giphycamplus.R;
+import com.hoomin.giphycamplus.multitouch.MoveGestureDetector;
+import com.hoomin.giphycamplus.multitouch.RotateGestureDetector;
+import com.hoomin.giphycamplus.widget.entity.MotionEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import team.uptech.motionviews.R;
-import team.uptech.motionviews.widget.entity.MotionEntity;
 
 /**
  * Created on 9/29/16.

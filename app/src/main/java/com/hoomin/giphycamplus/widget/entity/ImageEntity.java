@@ -7,7 +7,8 @@ import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import team.uptech.motionviews.viewmodel.Layer;
+import com.hoomin.giphycamplus.viewmodel.Layer;
+
 
 public class ImageEntity extends MotionEntity {
 

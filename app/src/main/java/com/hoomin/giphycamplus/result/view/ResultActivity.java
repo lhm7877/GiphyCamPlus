@@ -1,9 +1,12 @@
 package com.hoomin.giphycamplus.result.view;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -13,6 +16,9 @@ import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
 import com.hoomin.giphycamplus.stickerList.StickerListActivity;
+import com.hoomin.giphycamplus.widget.MotionView;
+import com.hoomin.giphycamplus.widget.entity.MotionEntity;
+import com.hoomin.giphycamplus.widget.entity.TextEntity;
 
 import java.io.File;
 
@@ -33,9 +39,13 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageButton ibtn_pencil;
     @BindView(R.id.ibtn_save)
     protected ImageButton ibtn_save;
+    @BindView(R.id.mv_result)
+    protected MotionView mv_result;
 
     private ResultPresenterImpl resultPresenter;
     private File albumImageFile;
+    protected View textEntityEditPanel;
+
 
 
     @Override
@@ -54,6 +64,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
         albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
         Glide.with(this).load(albumImageFile).into(iv_base);
+        mv_result.setMotionViewCallback(    );
     }
 
     @OnClick(R.id.ibtn_save)
@@ -94,4 +105,20 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
         }
     }
-}
+
+    private final MotionView.MotionViewCallback motionViewCallback = new MotionView.MotionViewCallback() {
+
+        @Override
+        public void onEntitySelected(@Nullable MotionEntity entity) {
+            if (entity instanceof TextEntity) {
+                textEntityEditPanel.setVisibility(View.VISIBLE);
+            } else {
+                textEntityEditPanel.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public void onEntityDoubleTap(@NonNull MotionEntity entity) {
+            startTextEntityEditing();
+        }
+    };
