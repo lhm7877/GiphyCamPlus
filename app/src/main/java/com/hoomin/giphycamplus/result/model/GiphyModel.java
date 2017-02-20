@@ -1,8 +1,5 @@
 package com.hoomin.giphycamplus.result.model;
 
-import android.content.Intent;
-import android.util.Log;
-
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
@@ -84,6 +81,6 @@ public class GiphyModel {
 
     public void callSelectedSticker(int position) {
         RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
-        modelDataChange.updateSelectedSticker(giphyDataDTOs.get(position).getImages().getOriginal());
+        modelDataChange.updateSelectedSticker(giphyDataDTOs.get(position).getImages().getFixed_height());
     }
 }

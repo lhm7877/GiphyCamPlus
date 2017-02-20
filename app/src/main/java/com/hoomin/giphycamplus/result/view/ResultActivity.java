@@ -1,43 +1,43 @@
 package com.hoomin.giphycamplus.result.view;
 
+import android.content.ClipData;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
-import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
 import com.hoomin.giphycamplus.stickerList.StickerListActivity;
-import com.hoomin.giphycamplus.viewmodel.Layer;
-import com.hoomin.giphycamplus.widget.MotionView;
-import com.hoomin.giphycamplus.widget.TextEditorDialogFragment;
-import com.hoomin.giphycamplus.widget.entity.ImageEntity;
-import com.hoomin.giphycamplus.widget.entity.MotionEntity;
-import com.hoomin.giphycamplus.widget.entity.TextEntity;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.realm.Realm;
-import io.realm.RealmResults;
 import retrofit2.Response;
 
 public class ResultActivity extends AppCompatActivity implements ResultPresenter.View {
     public static final int SELECT_STICKER_REQUEST_CODE = 123;
+
+    @BindView(R.id.activity_result)
+    protected FrameLayout activity_result;
     @BindView(R.id.iv_base)
     protected ImageView iv_base;
     @BindView(R.id.ibtn_sticker)
@@ -48,14 +48,14 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageButton ibtn_pencil;
     @BindView(R.id.ibtn_save)
     protected ImageButton ibtn_save;
-    @BindView(R.id.mv_result)
-    protected MotionView mv_result;
+    private ArrayList<ImageView> iv_Stickers;
 
     private ResultPresenterImpl resultPresenter;
     private File albumImageFile;
-    protected View textEntityEditPanel;
 
-    private Realm mRealm;
+    private int stickerIndex = 0;
+    ImageView iv_sticker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,14 +71,12 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         resultPresenter.attachView(this);
         albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
         Glide.with(this).load(albumImageFile).into(iv_base);
-        mv_result.setMotionViewCallback(motionViewCallback);
-        mRealm = Realm.getDefaultInstance();
-
+        iv_Stickers = new ArrayList<>();
     }
 
     @OnClick(R.id.ibtn_save)
     void clickSave() {
-        resultPresenter.saveImage(albumImageFile);
+        resultPresenter.saveImage(albumImageFile,iv_Stickers);
     }
 
     @OnClick(R.id.ibtn_sticker)
@@ -92,27 +90,74 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     public void updateReaction(Response<?> response) {
         Intent intent = new Intent(this, StickerListActivity.class);
         startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
-//        startActivity(intent);
     }
 
+
     @Override
-    public void addSticker(final Intent data) {
+    public void addSticker(final GiphyImageDTO imageDTO) {
+        iv_sticker = new ImageView(MyApplication.getMyContext());
+        Glide.with(this)
+                .load(imageDTO.getUrl())
+                .asGif()
+                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                .into(iv_sticker);
 
-        mv_result.post(new Runnable() {
-            @Override
-            public void run() {
-//                String url = data.getStringExtra("imageUrl");
 
+        final float scale = getResources().getDisplayMetrics().density;
+        int dpWidthInPx = (int) (200 * scale);
+        int dpHeightInPx = (int) (200 * scale);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(dpWidthInPx, dpHeightInPx);
+        iv_sticker.setLayoutParams(layoutParams);
+//        iv_sticker.setTag(stickerIndex);
+        activity_result.addView(iv_sticker);
+        iv_sticker.setOnTouchListener(testListener);
+        iv_Stickers.add(iv_sticker);
+        stickerIndex++;
+    }
 
-                Layer layer = new Layer();
-                Bitmap pica = BitmapFactory.decodeResource(getResources(), R.drawable.giphy);
+    View.OnTouchListener testListener = new View.OnTouchListener() {
+        private int xDelta;
+        private int yDelta;
 
-//                ImageEntity entity = new ImageEntity(layer, url, mv_result.getWidth(), mv_result.getHeight());
-//                mv_result.addEntityAndPosition(entity);
+        @Override
+        public boolean onTouch(View view, MotionEvent event) {
+            final int x = (int) event.getRawX();
+            final int y = (int) event.getRawY();
+            FrameLayout.LayoutParams layoutParams1 = (FrameLayout.LayoutParams) view.getLayoutParams();
+            switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    xDelta = x - layoutParams1.leftMargin;
+                    yDelta = y - layoutParams1.topMargin;
+                    break;
+                case MotionEvent.ACTION_UP:
+                    iv_sticker.setX(x);
+                    iv_sticker.setY(y);
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    layoutParams1.leftMargin = x - xDelta;
+                    layoutParams1.topMargin = y - yDelta;
+                    layoutParams1.rightMargin = 0;
+                    layoutParams1.bottomMargin = 0;
+                    view.setLayoutParams(layoutParams1);
+                    break;
             }
-        });
-//        ImageView iv = new ImageView(this);
+            activity_result.invalidate();
+            return true;
+        }
+    };
 
+    @Override
+    public void dragandDropSticker() {
+        for (int i = 0; i < iv_Stickers.size(); i++) {
+            final int finalI = i;
+            iv_Stickers.get(i).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(MyApplication.getMyContext(), "클릭"
+                            , Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
     }
 
     @Override
@@ -121,49 +166,11 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         if (resultCode == RESULT_OK) {
             if (requestCode == SELECT_STICKER_REQUEST_CODE) {
                 if (data != null) {
-                    int position = data.getIntExtra("imagePosition",0);
-
+                    int position = data.getIntExtra("imagePosition", 0);
                     resultPresenter.loadSeletedSticker(position);
                 }
             }
         }
     }
 
-    private final MotionView.MotionViewCallback motionViewCallback = new MotionView.MotionViewCallback() {
-
-        @Override
-        public void onEntitySelected(@Nullable MotionEntity entity) {
-//            if (entity instanceof TextEntity) {
-//                textEntityEditPanel.setVisibility(View.VISIBLE);
-//            } else {
-//                textEntityEditPanel.setVisibility(View.GONE);
-//            }
-        }
-
-        @Override
-        public void onEntityDoubleTap(@NonNull MotionEntity entity) {
-            startTextEntityEditing();
-        }
-    };
-
-    private void startTextEntityEditing() {
-        TextEntity textEntity = currentTextEntity();
-        if (textEntity != null) {
-            TextEditorDialogFragment fragment = TextEditorDialogFragment.getInstance(textEntity.getLayer().getText());
-            fragment.show(getFragmentManager(), TextEditorDialogFragment.class.getName());
-        }
-    }
-    @Nullable
-    private TextEntity currentTextEntity() {
-        if (mv_result != null && mv_result.getSelectedEntity() instanceof TextEntity) {
-            return ((TextEntity) mv_result.getSelectedEntity());
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    public MotionView getMv_result(){
-        return mv_result;
-    }
 }

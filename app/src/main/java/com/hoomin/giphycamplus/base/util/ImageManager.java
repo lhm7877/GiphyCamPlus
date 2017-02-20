@@ -48,7 +48,10 @@ public class ImageManager {
     }
 
     //테스트용
-    public static Bitmap mergeBitmapAndBitmap(Bitmap b1, Bitmap b2) {
+    public static Bitmap mergeBitmapAndBitmap(Bitmap b1, Sticker sticker,int i) {
+        Bitmap stickerFrame = sticker.gifDecoder.getFrame(i);
+        Bitmap stickerBitmap = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
+
         Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mBitmap);
 
@@ -56,7 +59,7 @@ public class ImageManager {
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;
 
         canvas.drawBitmap(b1, 0, 0, null);
-        canvas.drawBitmap(b2, 0, 0, null);
+        canvas.drawBitmap(stickerBitmap,0, 0, null);
 
         return mBitmap;
     }
@@ -81,7 +84,8 @@ public class ImageManager {
         for (int i = 0; i < sticker.getFrameCount(); i++) {
             Bitmap stickerFrame = sticker.gifDecoder.getFrame(i);
             Bitmap stickerBitmap = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
-            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickerBitmap));
+//            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickerBitmap));
+            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, sticker,i));
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();

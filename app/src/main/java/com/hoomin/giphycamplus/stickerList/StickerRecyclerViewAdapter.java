@@ -16,6 +16,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 
 import java.io.Serializable;
 
@@ -67,14 +68,17 @@ public class StickerRecyclerViewAdapter extends RecyclerView.Adapter<StickerView
                 public boolean onLongClick(View v) {
                     Log.i("selectImage", "롱클릭");
                     Intent intent = new Intent();
+
                     intent.putExtra("imagePosition", mPosition);
+
 //                intent.putExtra("LocationX",(v.getX()-(v.getWidth()/2)));
 //                intent.putExtra("LocationY",(v.getY()-(v.getWidth()/2)));
+
                     int[] pos = new int[2];
                     v.getLocationInWindow(pos);
-
                     Log.i("location", String.valueOf(pos[0]));
                     intent.putExtra("pos", pos);
+
                     ((Activity) mContext).setResult(RESULT_OK, intent);
                     ((Activity) mContext).finish();
                     return true;

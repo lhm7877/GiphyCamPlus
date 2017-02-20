@@ -1,17 +1,16 @@
 package com.hoomin.giphycamplus.result.presenter;
 
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
-import com.hoomin.giphycamplus.viewmodel.Layer;
-import com.hoomin.giphycamplus.widget.MotionView;
-import com.hoomin.giphycamplus.widget.entity.ImageEntity;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import retrofit2.Response;
 
@@ -46,10 +45,8 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void saveImage(File albumImageFile) {
+    public void saveImage(File albumImageFile, ArrayList<ImageView> iv_Stickers) {
         Sticker sticker = new Sticker(MyApplication.getMyContext(), "giphy.gif");
-
-
         imageManager.new mergeBitmapTask(sticker).execute(albumImageFile);
     }
 
@@ -69,6 +66,11 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
+    public void dragandDropSticker() {
+
+    }
+
+    @Override
     public void update(Response<?> response) {
         if (response.body() == null) {
             return;
@@ -79,21 +81,9 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void updateSelectedSticker(final GiphyImageDTO giphyImageDTOs) {
-        final MotionView mv_result = view.getMv_result();
-        mv_result.post(new Runnable() {
-            @Override
-            public void run() {
-                Layer layer = new Layer();
-                ImageEntity entity = new ImageEntity(
-                        layer,
-                        giphyImageDTOs,
-                        Integer.valueOf(mv_result.getWidth()),
-                        Integer.valueOf(mv_result.getHeight())
-                );
-                mv_result.addEntityAndPosition(entity);
-            }
-        });
+    public void updateSelectedSticker(GiphyImageDTO giphyImageDTOs) {
+
+        view.addSticker(giphyImageDTOs);
     }
 
 }
