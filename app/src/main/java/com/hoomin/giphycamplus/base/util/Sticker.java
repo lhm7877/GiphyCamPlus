@@ -1,8 +1,13 @@
 package com.hoomin.giphycamplus.base.util;
 
-import android.content.Context;
 import android.graphics.Bitmap;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
+import com.hoomin.giphycamplus.MyApplication;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
+
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -11,22 +16,30 @@ import java.util.Queue;
  */
 
 public class Sticker {
-    Context mContext;
-    GifDecoder gifDecoder;
+    private GifDecoder gifDecoder;
+    private GiphyImageDTO giphyImageDTO;
+    private InputStream inputStream;
+    private ImageView imageView;
+
 
     private Queue<Bitmap> gifFrames = new LinkedList<>();
     private int frameCount;
-    public Sticker(Context context, String path){
-        this.mContext = context;
-        init(path);
+    public Sticker(GiphyImageDTO imageDTO){
+        this.giphyImageDTO = imageDTO;
+        init();
     }
-    private void init(String path){
+    private void init(){
         gifDecoder = new GifDecoder();
-        gifDecoder.read(ImageManager.getInputStreamfromGif(mContext,path));
-        frameCount = gifDecoder.getFrameCount();
-        for (int i = 0; i < frameCount; i++) {
-            gifFrames.offer(gifDecoder.getFrame(i));
-        }
+//        gifDecoder.read(ImageManager.getInputStreamfromGif(mContext,giphyImageDTO));
+
+        imageView = new ImageView(MyApplication.getMyContext());
+
+        //ImageView의 크기 지정(drag시 크기 변화 방지)
+        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
+        int dpWidthInPx = (int) (200 * scale);
+        int dpHeightInPx = (int) (200 * scale);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(dpWidthInPx, dpHeightInPx);
+        imageView.setLayoutParams(layoutParams);
     }
 
     public Queue<Bitmap> getGifFrames() {
@@ -35,5 +48,41 @@ public class Sticker {
 
     public int getFrameCount() {
         return frameCount;
+    }
+
+    public GiphyImageDTO getGiphyImageDTO() {
+        return giphyImageDTO;
+    }
+
+    public void setGiphyImageDTO(GiphyImageDTO giphyImageDTO) {
+        this.giphyImageDTO = giphyImageDTO;
+    }
+
+    public InputStream getInputStream() {
+        return inputStream;
+    }
+
+    public void setInputStream(InputStream inputStream) {
+        gifDecoder.read(inputStream);
+        frameCount = gifDecoder.getFrameCount();
+        for (int i = 0; i < frameCount; i++) {
+            gifFrames.offer(gifDecoder.getFrame(i));
+        }
+    }
+
+    public ImageView getImageView() {
+        return imageView;
+    }
+
+    public void setImageView(ImageView imageView) {
+        this.imageView = imageView;
+    }
+
+    public GifDecoder getGifDecoder() {
+        return gifDecoder;
+    }
+
+    public void setGifDecoder(GifDecoder gifDecoder) {
+        this.gifDecoder = gifDecoder;
     }
 }

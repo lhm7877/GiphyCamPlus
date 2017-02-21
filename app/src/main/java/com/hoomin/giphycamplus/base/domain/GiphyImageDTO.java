@@ -1,5 +1,6 @@
 package com.hoomin.giphycamplus.base.domain;
 
+
 import java.io.Serializable;
 
 import io.realm.RealmObject;

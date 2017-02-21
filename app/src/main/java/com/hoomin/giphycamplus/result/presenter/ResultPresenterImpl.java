@@ -1,9 +1,7 @@
 package com.hoomin.giphycamplus.result.presenter;
 
 import android.util.Log;
-import android.widget.ImageView;
 
-import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
@@ -45,9 +43,8 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void saveImage(File albumImageFile, ArrayList<ImageView> iv_Stickers) {
-        Sticker sticker = new Sticker(MyApplication.getMyContext(), "giphy.gif");
-        imageManager.new mergeBitmapTask(sticker).execute(albumImageFile);
+    public void saveImage(File albumImageFile, ArrayList<Sticker> stickers) {
+        imageManager.new mergeBitmapTask(stickers).execute(albumImageFile);
     }
 
     @Override
@@ -59,9 +56,9 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void loadSeletedSticker(int data) {
+    public void loadSeletedSticker(int position) {
 //        view.
-        giphyModel.callSelectedSticker(data);
+        view.addSticker(giphyModel.callSelectedSticker(position));
 //        view.addSticker(data);
     }
 
@@ -78,12 +75,6 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
             view.updateReaction(response);
             this.response = response;
         }
-    }
-
-    @Override
-    public void updateSelectedSticker(GiphyImageDTO giphyImageDTOs) {
-
-        view.addSticker(giphyImageDTOs);
     }
 
 }

@@ -13,9 +13,11 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.hoomin.giphycamplus.MyApplication;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -24,8 +26,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import static com.hoomin.giphycamplus.R.drawable.sticker;
 
 /**
  * Created by Hooo on 2017-02-11.
@@ -34,23 +39,27 @@ import java.util.Queue;
 public class ImageManager {
     Queue<Bitmap> resultBitmapQ;
 
-    public static InputStream getInputStreamfromGif(Context context, String path) {
-        InputStream stream = null;
-        try {
-            stream = context.getAssets().open(path);
-        } catch (IOException e) {
-        }
-        return stream;
-    }
+    /*public static InputStream getInputStreamfromGif(Context context, GiphyImageDTO imageDTO) {
+//        return imageDTO.getInputStream();
+        return null;
+    }*/
 
     public ImageManager() {
         resultBitmapQ = new LinkedList<>();
     }
 
     //테스트용
-    public static Bitmap mergeBitmapAndBitmap(Bitmap b1, Sticker sticker,int i) {
-        Bitmap stickerFrame = sticker.gifDecoder.getFrame(i);
-        Bitmap stickerBitmap = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
+    public static Bitmap mergeBitmapAndBitmap(Bitmap b1, ArrayList<Sticker> stickers, int i) {
+        Bitmap[] scaledBitmap = new Bitmap[stickers.size()];
+        for(Sticker sticker : stickers){
+            Bitmap stickerFrame = sticker.getGifDecoder().getFrame(i);
+            scaledBitmap[stickers.indexOf(sticker)] = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
+        }
+//        for(int j =0; i<stickers.size(); i++){
+//            Bitmap stickerFrame = stickers.get(i).getGifDecoder().getFrame(i);
+//            scaledBitmap[i] = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
+//        }
+
 
         Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mBitmap);
@@ -59,12 +68,15 @@ public class ImageManager {
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;
 
         canvas.drawBitmap(b1, 0, 0, null);
-        canvas.drawBitmap(stickerBitmap,0, 0, null);
+        for(int j =0; j<stickers.size(); j++){
+            canvas.drawBitmap(scaledBitmap[j],stickers.get(j).getImageView().getX(),stickers.get(j).getImageView().getY(),null);
+        }
+//        canvas.drawBitmap(stickerBitmap,sticker.getImageView().getX(), sticker.getImageView().getY(), null);
 
         return mBitmap;
     }
 
-    public byte[] mergeBitmapAndSticker(File baseFile, Sticker sticker) {
+    public byte[] mergeBitmapAndSticker(File baseFile, ArrayList<Sticker> stickers) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
 //        Bitmap baseBitmap = Bitmap.createScaledBitmap(src, src.getWidth(), src.getHeight(), true);
@@ -81,11 +93,17 @@ public class ImageManager {
         int exifDegree = exifOrientationToDegrees(exifOrientation);
         baseBitmap = rotate(baseBitmap, exifDegree);
 
-        for (int i = 0; i < sticker.getFrameCount(); i++) {
-            Bitmap stickerFrame = sticker.gifDecoder.getFrame(i);
-            Bitmap stickerBitmap = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
-//            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickerBitmap));
-            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, sticker,i));
+        //가장 킨 프레임 카운트에 맞춤
+        int maxFrameCount = 0;
+        for(Sticker sticker : stickers){
+            if(sticker.getFrameCount()>maxFrameCount){
+                maxFrameCount = sticker.getFrameCount();
+            }
+
+        }
+
+        for (int i = 0; i < maxFrameCount; i++) {
+            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickers,i));
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -93,13 +111,14 @@ public class ImageManager {
         AnimatedGifEncoder encoder = new AnimatedGifEncoder();
         encoder.start(bos);
         encoder.setDelay(100);
-        for (int i = 0; i < sticker.getFrameCount(); i++) {
+        while(!resultBitmapQ.isEmpty()){
             Bitmap resultBitmap = resultBitmapQ.poll();
             encoder.addFrame(resultBitmap);
             resultBitmap.recycle();
         }
         encoder.finish();
 
+        Log.i("resultImage2", String.valueOf(bos.toByteArray()));
         return bos.toByteArray();
     }
 
@@ -132,19 +151,18 @@ public class ImageManager {
 
 
     public class mergeBitmapTask extends AsyncTask<File, Void, Boolean> {
-        private Sticker mSticker;
+        private ArrayList<Sticker> mStickers;
         private ImageManager mImageManager;
 
-        public mergeBitmapTask(Sticker sticker) {
-            this.mSticker = sticker;
+        public mergeBitmapTask(ArrayList<Sticker> sticker) {
+            this.mStickers = sticker;
             mImageManager = new ImageManager();
         }
 
         @Override
         protected Boolean doInBackground(File... params) {
-
-            Log.i("async", "doinback");
-            byte[] resultImage = mImageManager.mergeBitmapAndSticker(params[0], mSticker);
+            byte[] resultImage = mImageManager.mergeBitmapAndSticker(params[0], mStickers);
+            Log.i("resultImage", String.valueOf(resultImage));
             return mImageManager.saveImage(resultImage);
         }
 
@@ -157,18 +175,18 @@ public class ImageManager {
         }
     }
 
-    public void refreshAndroidGallery(Uri fileUri) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Intent mediaScanIntent = new Intent(
-                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            mediaScanIntent.setData(fileUri);
-            MyApplication.getMyContext().sendBroadcast(mediaScanIntent);
-        } else {
-            MyApplication.getMyContext().sendBroadcast(new Intent(
-                    Intent.ACTION_MEDIA_MOUNTED,
-                    Uri.parse("file://" + Environment.getExternalStorageDirectory())));
-        }
-    }
+//    public void refreshAndroidGallery(Uri fileUri) {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            Intent mediaScanIntent = new Intent(
+//                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//            mediaScanIntent.setData(fileUri);
+//            MyApplication.getMyContext().sendBroadcast(mediaScanIntent);
+//        } else {
+//            MyApplication.getMyContext().sendBroadcast(new Intent(
+//                    Intent.ACTION_MEDIA_MOUNTED,
+//                    Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+//        }
+//    }
 
     class MediaScanning implements MediaScannerConnection.MediaScannerConnectionClient {
         private MediaScannerConnection mConnection;

@@ -21,6 +21,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
+import com.hoomin.giphycamplus.base.util.Sticker;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
 import com.hoomin.giphycamplus.stickerList.StickerListActivity;
@@ -48,13 +49,20 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageButton ibtn_pencil;
     @BindView(R.id.ibtn_save)
     protected ImageButton ibtn_save;
+
+    //Todo: 네 개 중 하나만 필요
     private ArrayList<ImageView> iv_Stickers;
+    private ArrayList<GiphyImageDTO> giphyImageDTOs;
+    private int stickerIndex = 0;
+    private ArrayList<Sticker> stickers;
+
+
+    ImageView iv_sticker;
 
     private ResultPresenterImpl resultPresenter;
     private File albumImageFile;
 
-    private int stickerIndex = 0;
-    ImageView iv_sticker;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +79,12 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         resultPresenter.attachView(this);
         albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
         Glide.with(this).load(albumImageFile).into(iv_base);
-        iv_Stickers = new ArrayList<>();
+        stickers = new ArrayList<>();
     }
 
     @OnClick(R.id.ibtn_save)
     void clickSave() {
-        resultPresenter.saveImage(albumImageFile,iv_Stickers);
+        resultPresenter.saveImage(albumImageFile,stickers);
     }
 
     @OnClick(R.id.ibtn_sticker)
@@ -94,31 +102,33 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
 
     @Override
-    public void addSticker(final GiphyImageDTO imageDTO) {
-        iv_sticker = new ImageView(MyApplication.getMyContext());
+    public void addSticker(Sticker sticker) {
+        iv_sticker = sticker.getImageView();
         Glide.with(this)
-                .load(imageDTO.getUrl())
+                .load(sticker.getGiphyImageDTO().getUrl())
                 .asGif()
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(iv_sticker);
 
-
-        final float scale = getResources().getDisplayMetrics().density;
-        int dpWidthInPx = (int) (200 * scale);
-        int dpHeightInPx = (int) (200 * scale);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(dpWidthInPx, dpHeightInPx);
-        iv_sticker.setLayoutParams(layoutParams);
 //        iv_sticker.setTag(stickerIndex);
+        //결과 화면의 FrameLayout에 Imageview 추가
         activity_result.addView(iv_sticker);
+
+        //터치 리스너 등록
         iv_sticker.setOnTouchListener(testListener);
-        iv_Stickers.add(iv_sticker);
+
+        stickers.add(sticker);
+//        iv_Stickers.add(iv_sticker);
+//        imageDTO.setImageView(iv_sticker);
+//        giphyImageDTOs.add(imageDTO);
+
+        //TODO: stickerIndex 필요하나?
         stickerIndex++;
     }
 
     View.OnTouchListener testListener = new View.OnTouchListener() {
         private int xDelta;
         private int yDelta;
-
         @Override
         public boolean onTouch(View view, MotionEvent event) {
             final int x = (int) event.getRawX();
@@ -130,8 +140,6 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
                     yDelta = y - layoutParams1.topMargin;
                     break;
                 case MotionEvent.ACTION_UP:
-                    iv_sticker.setX(x);
-                    iv_sticker.setY(y);
                     break;
                 case MotionEvent.ACTION_MOVE:
                     layoutParams1.leftMargin = x - xDelta;

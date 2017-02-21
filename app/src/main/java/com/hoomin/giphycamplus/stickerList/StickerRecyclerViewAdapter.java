@@ -22,6 +22,10 @@ import java.io.Serializable;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -61,6 +65,9 @@ public class StickerRecyclerViewAdapter extends RecyclerView.Adapter<StickerView
                             .load(mResults.get(mPosition).getImages().getFixed_height().getUrl())
                             .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                             .into(holder.iv_itemSticker);
+                    //TODO : 스티커 선택시 다운로드 -> 스티커 롱클릭시 inputstream만 가져오기
+
+
                 }
             });
             holder.iv_itemSticker.setOnLongClickListener(new View.OnLongClickListener() {
@@ -74,10 +81,10 @@ public class StickerRecyclerViewAdapter extends RecyclerView.Adapter<StickerView
 //                intent.putExtra("LocationX",(v.getX()-(v.getWidth()/2)));
 //                intent.putExtra("LocationY",(v.getY()-(v.getWidth()/2)));
 
-                    int[] pos = new int[2];
-                    v.getLocationInWindow(pos);
-                    Log.i("location", String.valueOf(pos[0]));
-                    intent.putExtra("pos", pos);
+//                    int[] pos = new int[2];
+//                    v.getLocationInWindow(pos);
+//                    Log.i("location", String.valueOf(pos[0]));
+//                    intent.putExtra("pos", pos);
 
                     ((Activity) mContext).setResult(RESULT_OK, intent);
                     ((Activity) mContext).finish();

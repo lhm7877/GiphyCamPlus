@@ -1,14 +1,20 @@
 package com.hoomin.giphycamplus.result.model;
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
-import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
 import com.hoomin.giphycamplus.base.util.Define;
+import com.hoomin.giphycamplus.base.util.Sticker;
+
+import java.io.InputStream;
 
 import io.realm.Realm;
 import io.realm.RealmResults;
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -16,6 +22,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
+import retrofit2.http.Url;
 
 /**
  * Created by Hooo on 2017-02-13.
@@ -37,12 +44,16 @@ public class GiphyModel {
         Call<GiphyRepoDTO> repoStickerList(
                 @Query("q") String q,
                 @Query("api_key") String api_key);
+
+        @GET
+        Call<ResponseBody> getInputStream(
+                @Url String url);
+
     }
+
 
     public interface GiphyModelDataChange {
         void update(Response<?> response);
-
-        void updateSelectedSticker(GiphyImageDTO giphyImageDTOs);
     }
 
     public void setOnChangeListener(GiphyModel.GiphyModelDataChange dataChange) {
@@ -79,8 +90,42 @@ public class GiphyModel {
         }
     };
 
-    public void callSelectedSticker(int position) {
-        RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
-        modelDataChange.updateSelectedSticker(giphyDataDTOs.get(position).getImages().getFixed_height());
+    public Sticker callSelectedSticker(final int position) {
+        final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+
+        final Sticker sticker = new Sticker(giphyDataDTOs.get(position).getImages().getFixed_height());
+
+        Log.i("illegalURL",giphyDataDTOs.get(position).getImages().getFixed_height().getUrl());
+
+        //inputStream 가져옴
+        GiphyModel.GiphyRepoService giphyUrlDownloadService = GiphyModel.GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
+
+        Call<ResponseBody> callback = giphyUrlDownloadService.getInputStream(giphyDataDTOs.get(position).getImages().getFixed_height().getUrl());
+        callback.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                sticker.setInputStream(response.body().byteStream());
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
+
+        return sticker;
+
+
+    }
+
+    private class getInputStreamAsyncTask extends AsyncTask<String, Void, InputStream> {
+        @Override
+        protected InputStream doInBackground(String... params) {
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(InputStream inputStream) {
+            super.onPostExecute(inputStream);
+        }
     }
 }
