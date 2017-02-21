@@ -50,19 +50,20 @@ public class ImageManager {
 
     //테스트용
     public static Bitmap mergeBitmapAndBitmap(Bitmap b1, ArrayList<Sticker> stickers, int i) {
+        Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(mBitmap);
+
+        final int scale = (int) MyApplication.getMyContext().getResources().getDisplayMetrics().density;
+
         Bitmap[] scaledBitmap = new Bitmap[stickers.size()];
         for(Sticker sticker : stickers){
             Bitmap stickerFrame = sticker.getGifDecoder().getFrame(i);
-            scaledBitmap[stickers.indexOf(sticker)] = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
+            scaledBitmap[stickers.indexOf(sticker)] =
+                    Bitmap.createBitmap(stickerFrame, 0, 0, stickerFrame.getWidth()/4, stickerFrame.getHeight()/4);
+            Log.i("frameSize","가로 : " + stickerFrame.getWidth() + "   " + "세로 : " + stickerFrame.getHeight());
         }
-//        for(int j =0; i<stickers.size(); i++){
-//            Bitmap stickerFrame = stickers.get(i).getGifDecoder().getFrame(i);
-//            scaledBitmap[i] = Bitmap.createScaledBitmap(stickerFrame, stickerFrame.getWidth() / 4, stickerFrame.getHeight() / 4, true);
-//        }
 
 
-        Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
-        Canvas canvas = new Canvas(mBitmap);
 
 //        int adWDelta = (int)(b1.getWidth() - b2.getWidth())/2 ;
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;

@@ -1,15 +1,20 @@
 package com.hoomin.giphycamplus.result.presenter;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
+import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
 import retrofit2.Response;
 
 
@@ -22,6 +27,7 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     private GiphyModel giphyModel;
     private ImageManager imageManager;
     private Response<?> response;
+    private Realm mRealm;
 
     @Override
     public void attachView(ResultPresenter.View view) {
@@ -56,9 +62,26 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void loadSeletedSticker(int position) {
+    public void loadSeletedSticker(final int position) {
+
 //        view.
-        view.addSticker(giphyModel.callSelectedSticker(position));
+        new AsyncTask<Integer, Void, Sticker>() {
+            @Override
+            protected Sticker doInBackground(Integer... params) {
+                mRealm = Realm.getDefaultInstance();
+                RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+                GiphyImageDTO giphyImageDTO = giphyDataDTOs.get(position).getImages().getFixed_height();
+                Log.i("testLog",giphyImageDTO.getUrl());
+                return giphyModel.callSelectedSticker(giphyImageDTO);
+            }
+
+            @Override
+            protected void onPostExecute(Sticker sticker) {
+                super.onPostExecute(sticker);
+                view.addSticker(sticker);
+            }
+        }.execute();
+//        view.addSticker(giphyModel.callSelectedSticker(position));
 //        view.addSticker(data);
     }
 

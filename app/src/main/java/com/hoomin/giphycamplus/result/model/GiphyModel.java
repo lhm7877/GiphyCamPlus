@@ -6,10 +6,12 @@ import android.util.Log;
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
+import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.base.domain.GiphyRepoDTO;
 import com.hoomin.giphycamplus.base.util.Define;
 import com.hoomin.giphycamplus.base.util.Sticker;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import io.realm.Realm;
@@ -45,10 +47,18 @@ public class GiphyModel {
                 @Query("q") String q,
                 @Query("api_key") String api_key);
 
+
+    }
+
+    interface GifInputStreamService {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://api.giphy.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
         @GET
         Call<ResponseBody> getInputStream(
                 @Url String url);
-
     }
 
 
@@ -80,6 +90,7 @@ public class GiphyModel {
                 if (modelDataChange != null) {
                     modelDataChange.update(response);
                 }
+                mRealm.close();
             }
 //            Log.i("intent","response 실패");
         }
@@ -90,27 +101,35 @@ public class GiphyModel {
         }
     };
 
-    public Sticker callSelectedSticker(final int position) {
-        final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+    public Sticker callSelectedSticker(final GiphyImageDTO giphyImageDTO) {
+//        final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
 
-        final Sticker sticker = new Sticker(giphyDataDTOs.get(position).getImages().getFixed_height());
+        final Sticker sticker = new Sticker(giphyImageDTO);
 
-        Log.i("illegalURL",giphyDataDTOs.get(position).getImages().getFixed_height().getUrl());
 
         //inputStream 가져옴
-        GiphyModel.GiphyRepoService giphyUrlDownloadService = GiphyModel.GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
-
-        Call<ResponseBody> callback = giphyUrlDownloadService.getInputStream(giphyDataDTOs.get(position).getImages().getFixed_height().getUrl());
-        callback.enqueue(new Callback<ResponseBody>() {
-            @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                sticker.setInputStream(response.body().byteStream());
-            }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-            }
-        });
+        GiphyModel.GifInputStreamService gifInputStreamService = GiphyModel.GifInputStreamService.retrofit.create(GiphyModel.GifInputStreamService.class);
+        Log.i("testLog",giphyImageDTO.getUrl());
+        Call<ResponseBody> callback = gifInputStreamService.getInputStream(giphyImageDTO.getUrl());
+        try {
+            Response<ResponseBody> body = callback.execute();
+            sticker.setInputStream(body.body().byteStream());
+            Log.i("response", String.valueOf(sticker.getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        callback.enqueue(new Callback<ResponseBody>() {
+//            @Override
+//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//                Log.i("callbackRequest", String.valueOf(response.body().byteStream()));
+//                sticker.setInputStream(response.body().byteStream());
+//                Log.i("response", String.valueOf(sticker.getInputStream()));
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ResponseBody> call, Throwable t) {
+//            }
+//        });
 
         return sticker;
 

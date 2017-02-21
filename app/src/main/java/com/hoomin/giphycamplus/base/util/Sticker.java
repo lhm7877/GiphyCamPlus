@@ -35,10 +35,10 @@ public class Sticker {
         imageView = new ImageView(MyApplication.getMyContext());
 
         //ImageView의 크기 지정(drag시 크기 변화 방지)
-        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
-        int dpWidthInPx = (int) (200 * scale);
-        int dpHeightInPx = (int) (200 * scale);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(dpWidthInPx, dpHeightInPx);
+//        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
+//        int dpWidthInPx = (int) (200 * scale);
+//        int dpHeightInPx = (int) (200 * scale);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200, 200);
         imageView.setLayoutParams(layoutParams);
     }
 
@@ -68,6 +68,7 @@ public class Sticker {
         for (int i = 0; i < frameCount; i++) {
             gifFrames.offer(gifDecoder.getFrame(i));
         }
+        this.inputStream = inputStream;
     }
 
     public ImageView getImageView() {

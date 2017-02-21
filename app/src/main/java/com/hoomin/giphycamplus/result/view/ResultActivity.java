@@ -84,6 +84,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
     @OnClick(R.id.ibtn_save)
     void clickSave() {
+        Toast.makeText(MyApplication.getMyContext(),"저장클릭",Toast.LENGTH_SHORT).show();
         resultPresenter.saveImage(albumImageFile,stickers);
     }
 
