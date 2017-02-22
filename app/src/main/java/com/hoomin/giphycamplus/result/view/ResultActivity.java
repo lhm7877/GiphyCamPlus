@@ -2,6 +2,8 @@ package com.hoomin.giphycamplus.result.view;
 
 import android.content.ClipData;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,6 +23,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
+import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
@@ -62,7 +65,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     private ResultPresenterImpl resultPresenter;
     private File albumImageFile;
 
-
+private Bitmap baseBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +80,20 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     private void init() {
         resultPresenter = new ResultPresenterImpl();
         resultPresenter.attachView(this);
-        albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
-        Glide.with(this).load(albumImageFile).into(iv_base);
+        switch (getIntent().getExtras().getInt("activity")){
+            case 0 :
+                String url = getIntent().getStringExtra("capturedBaseImage");
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inSampleSize = 4;
+                Bitmap bitmap = BitmapFactory.decodeFile(url,options);
+                bitmap = ImageManager.rotateBitmap(bitmap,new File(url));
+                iv_base.setImageBitmap(bitmap);
+                break;
+            case 1 :
+                albumImageFile = (File) getIntent().getSerializableExtra("baseImage");
+                Glide.with(this).load(albumImageFile).into(iv_base);
+                break;
+        }
         stickers = new ArrayList<>();
     }
 

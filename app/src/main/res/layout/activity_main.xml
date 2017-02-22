@@ -6,15 +6,21 @@
     android:layout_height="match_parent"
     tools:context="com.hoomin.giphycamplus.MainActivity">
 
-    <ImageView
-        android:id="@+id/iv_main"
-        android:scaleType="fitXY"
+    <!--<com.hoomin.giphycamplus.CameraPreview-->
+        <!--android:id="@+id/cp_main"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent" />-->
+    <SurfaceView
+        android:id="@+id/sfv_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-    <ImageView
-        android:id="@+id/iv_gif"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+    <Button
+        android:id="@+id/btn_camera"
+        android:text="촬영"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="100dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
     <Button
         android:id="@+id/btn_save"
         android:text="저장"
@@ -35,3 +41,10 @@
         android:layout_height="wrap_content" />
 
 </FrameLayout>
+
+
+
+
+
+
+

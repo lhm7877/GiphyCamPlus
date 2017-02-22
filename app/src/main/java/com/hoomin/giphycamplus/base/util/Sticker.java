@@ -1,6 +1,7 @@
 package com.hoomin.giphycamplus.base.util;
 
 import android.graphics.Bitmap;
+import android.view.Gravity;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -39,6 +40,7 @@ public class Sticker {
 //        int dpWidthInPx = (int) (200 * scale);
 //        int dpHeightInPx = (int) (200 * scale);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200, 200);
+        layoutParams.gravity= Gravity.CENTER;
         imageView.setLayoutParams(layoutParams);
     }
 

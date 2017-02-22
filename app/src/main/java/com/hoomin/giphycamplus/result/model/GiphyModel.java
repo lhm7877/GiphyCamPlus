@@ -90,7 +90,6 @@ public class GiphyModel {
                 if (modelDataChange != null) {
                     modelDataChange.update(response);
                 }
-                mRealm.close();
             }
 //            Log.i("intent","response 실패");
         }
@@ -101,39 +100,38 @@ public class GiphyModel {
         }
     };
 
-    public Sticker callSelectedSticker(final GiphyImageDTO giphyImageDTO) {
-//        final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
-
+    public Sticker callSelectedSticker(final int position) {
+        RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+        GiphyImageDTO giphyImageDTO = giphyDataDTOs.get(position).getImages().getFixed_height();
         final Sticker sticker = new Sticker(giphyImageDTO);
-
 
         //inputStream 가져옴
         GiphyModel.GifInputStreamService gifInputStreamService = GiphyModel.GifInputStreamService.retrofit.create(GiphyModel.GifInputStreamService.class);
         Log.i("testLog",giphyImageDTO.getUrl());
         Call<ResponseBody> callback = gifInputStreamService.getInputStream(giphyImageDTO.getUrl());
-        try {
-            Response<ResponseBody> body = callback.execute();
-            sticker.setInputStream(body.body().byteStream());
-            Log.i("response", String.valueOf(sticker.getInputStream()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-//        callback.enqueue(new Callback<ResponseBody>() {
-//            @Override
-//            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-//                Log.i("callbackRequest", String.valueOf(response.body().byteStream()));
-//                sticker.setInputStream(response.body().byteStream());
-//                Log.i("response", String.valueOf(sticker.getInputStream()));
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ResponseBody> call, Throwable t) {
-//            }
-//        });
 
+        callback.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                Log.i("callbackRequest", String.valueOf(response.body().byteStream()));
+                sticker.setInputStream(response.body().byteStream());
+                Log.i("response", String.valueOf(sticker.getInputStream()));
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+            }
+        });
+
+//       new AsyncTask<Void,Void,InputStream>()
+//        try {
+//            Response<ResponseBody> body = callback.execute();
+//            sticker.setInputStream(body.body().byteStream());
+//            Log.i("response", String.valueOf(sticker.getInputStream()));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         return sticker;
-
-
     }
 
     private class getInputStreamAsyncTask extends AsyncTask<String, Void, InputStream> {

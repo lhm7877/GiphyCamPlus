@@ -62,27 +62,8 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void loadSeletedSticker(final int position) {
-
-//        view.
-        new AsyncTask<Integer, Void, Sticker>() {
-            @Override
-            protected Sticker doInBackground(Integer... params) {
-                mRealm = Realm.getDefaultInstance();
-                RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
-                GiphyImageDTO giphyImageDTO = giphyDataDTOs.get(position).getImages().getFixed_height();
-                Log.i("testLog",giphyImageDTO.getUrl());
-                return giphyModel.callSelectedSticker(giphyImageDTO);
-            }
-
-            @Override
-            protected void onPostExecute(Sticker sticker) {
-                super.onPostExecute(sticker);
-                view.addSticker(sticker);
-            }
-        }.execute();
-//        view.addSticker(giphyModel.callSelectedSticker(position));
-//        view.addSticker(data);
+    public void loadSeletedSticker(int position) {
+        view.addSticker(giphyModel.callSelectedSticker(position));
     }
 
     @Override

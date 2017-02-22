@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -50,6 +51,9 @@ public class ImageManager {
 
     //테스트용
     public static Bitmap mergeBitmapAndBitmap(Bitmap b1, ArrayList<Sticker> stickers, int i) {
+        Log.i("ratio", String.valueOf(b1.getWidth()));
+
+
         Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mBitmap);
 
@@ -57,13 +61,17 @@ public class ImageManager {
 
         Bitmap[] scaledBitmap = new Bitmap[stickers.size()];
         for(Sticker sticker : stickers){
+            float ratio = (float) (b1.getHeight() / 200.0);
+            float ratio2 = (float) (b1.getWidth() / sticker.getGifDecoder().getFrame(i).getWidth());
             Bitmap stickerFrame = sticker.getGifDecoder().getFrame(i);
             scaledBitmap[stickers.indexOf(sticker)] =
-                    Bitmap.createBitmap(stickerFrame, 0, 0, stickerFrame.getWidth()/4, stickerFrame.getHeight()/4);
+                    Bitmap.createBitmap(stickerFrame, 0, 0, (int) (stickerFrame.getWidth()/ratio2), (int) (b1.getHeight()/ratio));
             Log.i("frameSize","가로 : " + stickerFrame.getWidth() + "   " + "세로 : " + stickerFrame.getHeight());
         }
 
 
+
+//        Log.i("ratio", ratio+" "+scaledBitmap[0].getHeight());
 
 //        int adWDelta = (int)(b1.getWidth() - b2.getWidth())/2 ;
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;
@@ -83,16 +91,8 @@ public class ImageManager {
 //        Bitmap baseBitmap = Bitmap.createScaledBitmap(src, src.getWidth(), src.getHeight(), true);
         //비트맵이 사진 회전 속성에 따라 회전되어 저장되도록 수정
         Bitmap baseBitmap = BitmapFactory.decodeFile(baseFile.getAbsolutePath(), options);
-        ExifInterface exif = null;
-        try {
-            exif = new ExifInterface(baseFile.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        int exifOrientation = exif.getAttributeInt(
-                ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-        int exifDegree = exifOrientationToDegrees(exifOrientation);
-        baseBitmap = rotate(baseBitmap, exifDegree);
+
+        baseBitmap = rotateBitmap(baseBitmap,baseFile);
 
         //가장 킨 프레임 카운트에 맞춤
         int maxFrameCount = 0;
@@ -132,7 +132,15 @@ public class ImageManager {
         if (!diFile.exists()) {
             diFile.mkdirs();
         }
-        File file = new File(giphyPath, "Test4.gif");
+        Calendar c = Calendar.getInstance();
+        String date = String.valueOf((c.get(Calendar.MONTH))
+                        + (c.get(Calendar.DAY_OF_MONTH))
+                        + (c.get(Calendar.YEAR))
+                        + (c.get(Calendar.HOUR_OF_DAY))
+                        + (c.get(Calendar.MINUTE))
+                        + (c.get(Calendar.SECOND)));
+
+        File file = new File(giphyPath, date+".gif");
         Log.i("path", file.getPath());
 
         try {
@@ -189,7 +197,7 @@ public class ImageManager {
 //        }
 //    }
 
-    class MediaScanning implements MediaScannerConnection.MediaScannerConnectionClient {
+    static class MediaScanning implements MediaScannerConnection.MediaScannerConnectionClient {
         private MediaScannerConnection mConnection;
         private File mTargetFile;
 
@@ -211,7 +219,7 @@ public class ImageManager {
     }
 
 
-    public Bitmap rotate(Bitmap bitmap, int degrees) {
+    public static Bitmap rotate(Bitmap bitmap, int degrees) {
         if (degrees != 0 && bitmap != null) {
             Matrix m = new Matrix();
             m.setRotate(degrees, (float) bitmap.getWidth() / 2,
@@ -231,7 +239,7 @@ public class ImageManager {
         return bitmap;
     }
 
-    public int exifOrientationToDegrees(int exifOrientation) {
+    public static int exifOrientationToDegrees(int exifOrientation) {
         if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) {
             return 90;
         } else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {
@@ -240,6 +248,42 @@ public class ImageManager {
             return 270;
         }
         return 0;
+    }
+
+    public static Bitmap rotateBitmap(Bitmap baseBitmap, File baseFile){
+        Log.i("rotate","rotateBitmap()");
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(baseFile.getAbsolutePath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        int exifOrientation = exif.getAttributeInt(
+                ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        int exifDegree = exifOrientationToDegrees(exifOrientation);
+        Log.i("rotate", String.valueOf(exifDegree));
+        return rotate(baseBitmap, exifDegree);
+    }
+    public static String saveBitmapToJpeg(Context context, Bitmap bitmap){
+//        File storage = context.getCacheDir(); // 이 부분이 임시파일 저장 경로
+        File diFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/GiphyCamPlus");
+        String giphyPath = diFile.getPath();
+        File storage = new File(giphyPath);
+        String fileName = "tempImage.jpg";  // 파일이름은 마음대로!
+        File tempFile = new File(storage,fileName);
+        Log.i("rotate",tempFile.getAbsolutePath());
+        try{
+            tempFile.createNewFile();  // 파일을 생성해주고
+            FileOutputStream out = new FileOutputStream(tempFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100 , out);  // 넘거 받은 bitmap을 jpeg(손실압축)으로 저장해줌
+            out.close(); // 마무리로 닫아줍니다.
+            new MediaScanning(MyApplication.getMyContext(), tempFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tempFile.getAbsolutePath();   // 임시파일 저장경로를 리턴해주면 끝!
     }
 
 
