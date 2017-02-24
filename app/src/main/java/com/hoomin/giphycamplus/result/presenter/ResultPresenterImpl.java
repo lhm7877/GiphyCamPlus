@@ -1,20 +1,15 @@
 package com.hoomin.giphycamplus.result.presenter;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
-import com.hoomin.giphycamplus.base.domain.GiphyDataDTO;
-import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
 
 import io.realm.Realm;
-import io.realm.RealmResults;
 import retrofit2.Response;
 
 
@@ -54,11 +49,11 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void loadSticker() {
+    public void loadSticker(Boolean isFilled) {
         if (giphyModel == null) {
             return;
         }
-        giphyModel.callSticker();
+        giphyModel.callSticker(isFilled);
     }
 
     @Override

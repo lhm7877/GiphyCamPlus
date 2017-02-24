@@ -17,33 +17,60 @@
         android:layout_height="40dp"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginTop="10dp"
-        android:background="@drawable/sticker" />
+        android:background="@drawable/sticker100" />
 
     <ImageButton
-        android:id="@+id/ibtn_text"
+        android:id="@+id/ibtn_sticker_filled"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginLeft="50dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/text" />
+        android:background="@drawable/stickerfilled100" />
 
     <ImageButton
-        android:id="@+id/ibtn_pencil"
+        android:id="@+id/ibtn_plus"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginLeft="100dp"
         android:layout_marginTop="10dp"
-        android:background="@drawable/pencil" />
+        android:background="@drawable/plus120" />
+
+    <ImageButton
+        android:id="@+id/ibtn_minus"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginLeft="150dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/minus120" />
+
+
+
+    <!--<ImageButton-->
+        <!--android:id="@+id/ibtn_pencil"-->
+        <!--android:layout_width="40dp"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:layout_gravity="top|center_horizontal"-->
+        <!--android:layout_marginLeft="100dp"-->
+        <!--android:layout_marginTop="10dp"-->
+        <!--android:background="@drawable/pencil" />-->
 
     <ImageButton
         android:id="@+id/ibtn_save"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/download96" />
+
+    <ImageButton
+        android:id="@+id/ibtn_back"
+        android:background="@drawable/back100"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="10dp"
-        android:background="@drawable/save" />
+        android:layout_marginTop="10dp"/>
 
 
 </FrameLayout>

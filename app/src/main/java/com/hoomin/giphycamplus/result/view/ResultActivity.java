@@ -43,12 +43,13 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageView iv_base;
     @BindView(R.id.ibtn_sticker)
     protected ImageButton ibtn_sticker;
-    @BindView(R.id.ibtn_text)
-    protected ImageButton ibtn_text;
-    @BindView(R.id.ibtn_pencil)
-    protected ImageButton ibtn_pencil;
     @BindView(R.id.ibtn_save)
     protected ImageButton ibtn_save;
+    @BindView(R.id.ibtn_plus)
+    protected ImageButton ibtn_plus;
+    @BindView(R.id.ibtn_minus)
+    protected ImageButton ibtn_minus;
+
 
     private ArrayList<Sticker> stickers;
 
@@ -62,6 +63,10 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     private Bitmap baseBitmap;
 
     PhotoViewAttacher mAttacher;
+
+    Boolean isFilled = true;
+
+    private PhotoView currentPhotoview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,26 +91,57 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 //        Glide.with(this).load(albumImageFile)
 //                .diskCacheStrategy(DiskCacheStrategy.SOURCE).into(iv_base);
         stickers = new ArrayList<>();
+
+        ibtn_plus.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN :{
+                        ibtn_plus.setBackgroundResource(R.drawable.plusfilled120);
+                        currentPhotoview.getLayoutParams().height *= 1.1;
+                        currentPhotoview.getLayoutParams().width *= 1.1;
+                        return true;
+                    }
+                    case MotionEvent.ACTION_UP : {
+
+                        ibtn_plus.setBackgroundResource(R.drawable.plus120);
+                        return true;
+                    }
+                }
+                return true;
+            }
+        });
     }
 
     @OnClick(R.id.ibtn_save)
     void clickSave() {
-        Toast.makeText(MyApplication.getMyContext(), "저장클릭", Toast.LENGTH_SHORT).show();
         resultPresenter.saveImage(albumImageFile, stickers);
+    }
+    @OnClick(R.id.ibtn_sticker_filled)
+    void clickStickerFilled(){
+        isFilled = true;
+        resultPresenter.loadSticker(isFilled);
     }
 
     @OnClick(R.id.ibtn_sticker)
     void clickSticker() {
-        Toast.makeText(this, "스티커클릭", Toast.LENGTH_SHORT).show();
-        resultPresenter.loadSticker();
+        isFilled = false;
+        resultPresenter.loadSticker(isFilled);
+    }
+
+    @OnClick(R.id.ibtn_back)void backButton(){
+        finish();
     }
 
 
     @Override
     public void updateReaction(Response<?> response) {
         Intent intent = new Intent(this, StickerListActivity.class);
+        intent.putExtra("isFilled",isFilled);
         startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
     }
+
+
 
 
     @Override
@@ -120,7 +156,8 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(photoView);
         photoView.setOnTouchListener(myTouchListener);
-
+        photoView.setTag(0);
+        currentPhotoview = photoView;
 //        iv_sticker.setTag(stickerIndex);
         //결과 화면의 FrameLayout에 Imageview 추가
         activity_result.addView(photoView);

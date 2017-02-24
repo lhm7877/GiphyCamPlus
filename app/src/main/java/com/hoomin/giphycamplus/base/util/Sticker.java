@@ -24,6 +24,7 @@ public class Sticker {
     private InputStream inputStream;
     //    private ImageView imageView;
     private PhotoView photoView;
+    private LinearLayout.LayoutParams layoutParams;
 
 
     private Queue<Bitmap> gifFrames = new LinkedList<>();
@@ -48,7 +49,7 @@ public class Sticker {
 //        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
 //        int dpWidthInPx = (int) (200 * scale);
 //        int dpHeightInPx = (int) (200 * scale);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200,200);
+        layoutParams = new LinearLayout.LayoutParams(200,200);
         photoView = new PhotoView(MyApplication.getMyContext());
         layoutParams.gravity = Gravity.CENTER;
         photoView.setLayoutParams(layoutParams);
@@ -105,5 +106,13 @@ public class Sticker {
 
     public void setGifDecoder(GifDecoder gifDecoder) {
         this.gifDecoder = gifDecoder;
+    }
+
+    public LinearLayout.LayoutParams getLayoutParams() {
+        return layoutParams;
+    }
+
+    public void setLayoutParams(LinearLayout.LayoutParams layoutParams) {
+        this.layoutParams = layoutParams;
     }
 }

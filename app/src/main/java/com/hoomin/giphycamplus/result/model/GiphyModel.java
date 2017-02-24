@@ -38,11 +38,11 @@ public class GiphyModel {
 
     public interface GiphyRepoService {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://api.giphy.com/")
+                .baseUrl("http://api.giphy.com//")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        @GET("/v1/stickers/search")
+        @GET("/v1/gifs/search")
         Call<GiphyRepoDTO> repoStickerList(
                 @Query("q") String q,
                 @Query("api_key") String api_key);
@@ -70,12 +70,18 @@ public class GiphyModel {
         modelDataChange = dataChange;
     }
 
-    public void callSticker() {
+    public void callSticker(Boolean isFilled) {
         GiphyModel.GiphyRepoService giphyRepoService = GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
-        Call<GiphyRepoDTO> call = giphyRepoService.repoStickerList(
-                MyApplication.getMyContext().getResources().getString(R.string.sticker_effect)
-                , Define.GIPHY_API_KEY);
-        call.enqueue(dataCallBackListener);
+        String stringSticker = "";
+        if(!isFilled){
+            stringSticker = " sticker";
+        }
+            Call<GiphyRepoDTO> call = giphyRepoService.repoStickerList(
+                    MyApplication.getMyContext().getResources().getString(R.string.sticker_effect)+stringSticker
+                    , Define.GIPHY_API_KEY);
+            call.enqueue(dataCallBackListener);
+
+
     }
 
     private Callback<GiphyRepoDTO> dataCallBackListener = new Callback<GiphyRepoDTO>() {
@@ -83,6 +89,12 @@ public class GiphyModel {
         public void onResponse(Call<GiphyRepoDTO> call, Response<GiphyRepoDTO> response) {
             if (response.isSuccessful()) {
                 mRealm = Realm.getDefaultInstance();
+                mRealm.executeTransaction(new Realm.Transaction() {
+                    @Override
+                    public void execute(Realm realm) {
+                        mRealm.deleteAll();
+                    }
+                });
                 mRealm.beginTransaction();
                 mRealm.copyToRealm(response.body());
                 mRealm.commitTransaction();

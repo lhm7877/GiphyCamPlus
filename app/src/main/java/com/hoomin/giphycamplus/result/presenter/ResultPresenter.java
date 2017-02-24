@@ -25,7 +25,7 @@ public interface ResultPresenter {
         void attachView(ResultPresenter.View view);
         void detachView();
         void saveImage(File albumImageFile, ArrayList<Sticker> stickers);
-        void loadSticker();
+        void loadSticker(Boolean isFilled);
         void loadSeletedSticker(int data);
         void dragandDropSticker();
     }

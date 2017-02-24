@@ -21,6 +21,7 @@ import com.hoomin.giphycamplus.result.model.GiphyModel;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.OnEditorAction;
 import io.realm.Realm;
 import io.realm.RealmResults;
@@ -31,16 +32,14 @@ import retrofit2.Response;
 
 public class StickerListActivity extends Activity {
 
-    @BindView(R.id.ibtn_sticker)
-    protected ImageButton ibtn_sticker;
-    @BindView(R.id.ibtn_text)
-    protected ImageButton ibtn_text;
-    @BindView(R.id.ibtn_pencil)
-    protected ImageButton ibtn_pencil;
     @BindView(R.id.rv_sticker)
     protected RecyclerView rv_sticker;
     @BindView(R.id.etv_search)
     protected EditText etv_search;
+    @BindView(R.id.ibtn_sticker_in_listview)
+    protected ImageButton ibtn_sticker_in_listview;
+    @BindView(R.id.ibtn_sticker_filled_in_listview)
+    protected ImageButton ibtn_sticker_filled_in_listview;
 
 
     private StickerRecyclerViewAdapter stickerRecyclerViewAdapter;
@@ -48,6 +47,8 @@ public class StickerListActivity extends Activity {
 
 
     private Realm mRealm;
+
+    private Boolean isFilled = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +66,7 @@ public class StickerListActivity extends Activity {
     }
 
     private void init() {
+        isFilled = getIntent().getBooleanExtra("isFilled",true);
         mRealm = Realm.getDefaultInstance();
         final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
         rv_layoutManager = new GridLayoutManager(this,4);
@@ -81,9 +83,13 @@ public class StickerListActivity extends Activity {
                     }
                 });
                 if(actionId == EditorInfo.IME_ACTION_SEARCH){
+                    String stringSticker = "";
+                    if(!isFilled){
+                        stringSticker = " sticker";
+                    }
                     GiphyModel.GiphyRepoService giphyRepoService = GiphyModel.GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
                     Call<GiphyRepoDTO> call = giphyRepoService.repoStickerList(
-                            v.getText().toString(), Define.GIPHY_API_KEY);
+                            v.getText().toString()+stringSticker, Define.GIPHY_API_KEY);
                     call.enqueue(dataCallBackListener);
                 }
                 return false;
@@ -109,6 +115,31 @@ public class StickerListActivity extends Activity {
         }
     };
 
+    @OnClick(R.id.ibtn_sticker_filled_in_listview)void clickStickerFilled(){
+        mRealm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                mRealm.deleteAll();
+            }
+        });
+        stickerRecyclerViewAdapter.notifyDataSetChanged();
+        isFilled = true;
+        ibtn_sticker_in_listview.setBackgroundResource(R.drawable.stickerpressed);
+        ibtn_sticker_filled_in_listview.setBackgroundResource(R.drawable.stickerfilled100);
+    }
+
+    @OnClick(R.id.ibtn_sticker_in_listview) void clickSticker(){
+        mRealm.executeTransaction(new Realm.Transaction() {
+            @Override
+            public void execute(Realm realm) {
+                mRealm.deleteAll();
+            }
+        });
+        stickerRecyclerViewAdapter.notifyDataSetChanged();
+        isFilled = false;
+        ibtn_sticker_filled_in_listview.setBackgroundResource(R.drawable.stickerfilledpressed);
+        ibtn_sticker_in_listview.setBackgroundResource(R.drawable.sticker100);
+    }
 
 
 //    private void resetRealm() {
