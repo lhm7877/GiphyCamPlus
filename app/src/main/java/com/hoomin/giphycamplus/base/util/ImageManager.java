@@ -12,7 +12,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -53,22 +55,22 @@ public class ImageManager {
     public static Bitmap mergeBitmapAndBitmap(Bitmap b1, ArrayList<Sticker> stickers, int i) {
         Log.i("ratio", String.valueOf(b1.getWidth()));
 
-
         Bitmap mBitmap = Bitmap.createBitmap(b1.getWidth(), b1.getHeight(), Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(mBitmap);
 
-        final int scale = (int) MyApplication.getMyContext().getResources().getDisplayMetrics().density;
+        DisplayMetrics dm = new DisplayMetrics();
+        ((WindowManager) MyApplication.getMyContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(dm);
+
+        float yRatio = (float) b1.getHeight() / (float) dm.heightPixels;
+        float xRatio = (float) b1.getWidth() / (float) dm.widthPixels;
 
         Bitmap[] scaledBitmap = new Bitmap[stickers.size()];
-        for(Sticker sticker : stickers){
-            float ratio = (float) (b1.getHeight() / 200.0);
-            float ratio2 = (float) (b1.getWidth() / sticker.getGifDecoder().getFrame(i).getWidth());
+        for (Sticker sticker : stickers) {
             Bitmap stickerFrame = sticker.getGifDecoder().getFrame(i);
             scaledBitmap[stickers.indexOf(sticker)] =
-                    Bitmap.createBitmap(stickerFrame, 0, 0, (int) (stickerFrame.getWidth()/ratio2), (int) (b1.getHeight()/ratio));
-            Log.i("frameSize","가로 : " + stickerFrame.getWidth() + "   " + "세로 : " + stickerFrame.getHeight());
+                    Bitmap.createScaledBitmap(stickerFrame, (int) (stickerFrame.getWidth() * xRatio), (int) (stickerFrame.getHeight() * yRatio), false);
         }
-
+        Log.i("sizeCheck2", scaledBitmap[0].getWidth() + " " + scaledBitmap[0].getHeight());
 
 
 //        Log.i("ratio", ratio+" "+scaledBitmap[0].getHeight());
@@ -77,8 +79,8 @@ public class ImageManager {
 //        int adHDelta = (int)(b1.getHeight() - b2.getHeight())/2;
 
         canvas.drawBitmap(b1, 0, 0, null);
-        for(int j =0; j<stickers.size(); j++){
-            canvas.drawBitmap(scaledBitmap[j],stickers.get(j).getImageView().getX(),stickers.get(j).getImageView().getY(),null);
+        for (int j = 0; j < stickers.size(); j++) {
+            canvas.drawBitmap(scaledBitmap[j], stickers.get(j).getPhotoView().getX() * xRatio, stickers.get(j).getPhotoView().getY() * yRatio, null);
         }
 //        canvas.drawBitmap(stickerBitmap,sticker.getImageView().getX(), sticker.getImageView().getY(), null);
 
@@ -86,25 +88,37 @@ public class ImageManager {
     }
 
     public byte[] mergeBitmapAndSticker(File baseFile, ArrayList<Sticker> stickers) {
+
+
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
+
 //        Bitmap baseBitmap = Bitmap.createScaledBitmap(src, src.getWidth(), src.getHeight(), true);
         //비트맵이 사진 회전 속성에 따라 회전되어 저장되도록 수정
         Bitmap baseBitmap = BitmapFactory.decodeFile(baseFile.getAbsolutePath(), options);
 
-        baseBitmap = rotateBitmap(baseBitmap,baseFile);
+        baseBitmap = rotateBitmap(baseBitmap, baseFile);
+
+
+        //Log용
+        Log.i("sizeCheck", "Base 가로 : " + baseBitmap.getWidth() + "   " + "세로 : " + baseBitmap.getHeight());
+        for (Sticker sticker : stickers) {
+            Log.i("sizeCheck", "가로 : " + sticker.getGifDecoder().getFrame(0).getWidth() + "   " + "세로 : " + sticker.getGifDecoder().getFrame(0).getHeight());
+        }
+        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
+        Log.i("scale", String.valueOf(scale));
 
         //가장 킨 프레임 카운트에 맞춤
         int maxFrameCount = 0;
-        for(Sticker sticker : stickers){
-            if(sticker.getFrameCount()>maxFrameCount){
+        for (Sticker sticker : stickers) {
+            if (sticker.getFrameCount() > maxFrameCount) {
                 maxFrameCount = sticker.getFrameCount();
             }
 
         }
 
         for (int i = 0; i < maxFrameCount; i++) {
-            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickers,i));
+            resultBitmapQ.offer(mergeBitmapAndBitmap(baseBitmap, stickers, i));
         }
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -112,7 +126,7 @@ public class ImageManager {
         AnimatedGifEncoder encoder = new AnimatedGifEncoder();
         encoder.start(bos);
         encoder.setDelay(100);
-        while(!resultBitmapQ.isEmpty()){
+        while (!resultBitmapQ.isEmpty()) {
             Bitmap resultBitmap = resultBitmapQ.poll();
             encoder.addFrame(resultBitmap);
             resultBitmap.recycle();
@@ -132,15 +146,12 @@ public class ImageManager {
         if (!diFile.exists()) {
             diFile.mkdirs();
         }
-        Calendar c = Calendar.getInstance();
-        String date = String.valueOf((c.get(Calendar.MONTH))
-                        + (c.get(Calendar.DAY_OF_MONTH))
-                        + (c.get(Calendar.YEAR))
-                        + (c.get(Calendar.HOUR_OF_DAY))
-                        + (c.get(Calendar.MINUTE))
-                        + (c.get(Calendar.SECOND)));
-
-        File file = new File(giphyPath, date+".gif");
+        Calendar calendar = Calendar.getInstance();
+        String date = String.format("HM%02d%02d%02d-%02d%02d%02d.jpg",
+                calendar.get(Calendar.YEAR) % 100, calendar.get(Calendar.MONTH) + 1,
+                calendar.get(Calendar.DAY_OF_MONTH), calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+        File file = new File(giphyPath, date + ".gif");
         Log.i("path", file.getPath());
 
         try {
@@ -250,8 +261,8 @@ public class ImageManager {
         return 0;
     }
 
-    public static Bitmap rotateBitmap(Bitmap baseBitmap, File baseFile){
-        Log.i("rotate","rotateBitmap()");
+    public static Bitmap rotateBitmap(Bitmap baseBitmap, File baseFile) {
+        Log.i("rotate", "rotateBitmap()");
         ExifInterface exif = null;
         try {
             exif = new ExifInterface(baseFile.getAbsolutePath());
@@ -264,18 +275,27 @@ public class ImageManager {
         Log.i("rotate", String.valueOf(exifDegree));
         return rotate(baseBitmap, exifDegree);
     }
-    public static String saveBitmapToJpeg(Context context, Bitmap bitmap){
-//        File storage = context.getCacheDir(); // 이 부분이 임시파일 저장 경로
-        File diFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/GiphyCamPlus");
-        String giphyPath = diFile.getPath();
-        File storage = new File(giphyPath);
-        String fileName = "tempImage.jpg";  // 파일이름은 마음대로!
-        File tempFile = new File(storage,fileName);
-        Log.i("rotate",tempFile.getAbsolutePath());
-        try{
+
+    public static String saveBitmapToJpeg(Context context, Bitmap bitmap) {
+        File storage = context.getCacheDir(); // 이 부분이 임시파일 저장 경로
+//        File diFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) + "/GiphyCamPlus");
+//        String giphyPath = diFile.getPath();
+
+        File tempFile = new File(storage, "tempImage.gif");
+
+//        String fileName = "tempImage2.jpg";  // 파일이름은 마음대로!
+//        File tempFile = new File(storage, fileName);
+
+        Matrix m = new Matrix();
+        m.setRotate(90, (float) bitmap.getWidth(), (float) bitmap.getHeight());
+        Bitmap rotateBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, false);
+
+
+        Log.i("rotate", tempFile.getAbsolutePath());
+        try {
             tempFile.createNewFile();  // 파일을 생성해주고
             FileOutputStream out = new FileOutputStream(tempFile);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100 , out);  // 넘거 받은 bitmap을 jpeg(손실압축)으로 저장해줌
+            rotateBitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);  // 넘거 받은 bitmap을 jpeg(손실압축)으로 저장해줌
             out.close(); // 마무리로 닫아줍니다.
             new MediaScanning(MyApplication.getMyContext(), tempFile);
         } catch (FileNotFoundException e) {

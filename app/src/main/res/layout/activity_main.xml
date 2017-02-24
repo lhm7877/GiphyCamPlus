@@ -21,24 +21,14 @@
         android:layout_marginBottom="100dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
     <Button
-        android:id="@+id/btn_save"
-        android:text="저장"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    <Button
-        android:id="@+id/btn_split"
-        android:text="분할"
-        android:layout_gravity="bottom|right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-    <Button
-        android:id="@+id/btn_result"
-        android:text="result"
-        android:layout_gravity="bottom|left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:id="@+id/btn_gallery"
+        android:background="@drawable/picture120"
+        android:layout_marginTop="10dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_width="60dp"
+        android:layout_height="60dp" />
 
 </FrameLayout>
 

@@ -36,7 +36,7 @@ public class GiphyModel {
     private GiphyModel.GiphyModelDataChange modelDataChange;
     private Realm mRealm;
 
-    interface GiphyRepoService {
+    public interface GiphyRepoService {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://api.giphy.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -50,7 +50,7 @@ public class GiphyModel {
 
     }
 
-    interface GifInputStreamService {
+    public interface GifInputStreamService {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("http://api.giphy.com/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -102,12 +102,13 @@ public class GiphyModel {
 
     public Sticker callSelectedSticker(final int position) {
         RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
+//        if(giphyDataDTOs.get(position).getImages().getFixed_height().getSize())
         GiphyImageDTO giphyImageDTO = giphyDataDTOs.get(position).getImages().getFixed_height();
+        Log.i("sizeCheck","id : "+giphyImageDTO.getUrl());
         final Sticker sticker = new Sticker(giphyImageDTO);
 
         //inputStream 가져옴
         GiphyModel.GifInputStreamService gifInputStreamService = GiphyModel.GifInputStreamService.retrofit.create(GiphyModel.GifInputStreamService.class);
-        Log.i("testLog",giphyImageDTO.getUrl());
         Call<ResponseBody> callback = gifInputStreamService.getInputStream(giphyImageDTO.getUrl());
 
         callback.enqueue(new Callback<ResponseBody>() {

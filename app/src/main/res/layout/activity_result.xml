@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#ffffff"
     tools:context="com.hoomin.giphycamplus.result.view.ResultActivity">
-
     <ImageView
         android:id="@+id/iv_base"
         android:layout_width="match_parent"

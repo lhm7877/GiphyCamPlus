@@ -33,4 +33,7 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     compile 'com.android.support:recyclerview-v7:25.1.0'
+    compile 'com.github.chrisbanes.photoview:library:1.2.4'
+    compile 'com.theartofdev.edmodo:android-image-cropper:2.3.+'
+
 }

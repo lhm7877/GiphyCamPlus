@@ -20,7 +20,6 @@ public interface ResultPresenter {
     interface View{
         void updateReaction(Response<?> response);
         void addSticker(Sticker sticker);
-        void dragandDropSticker();
     }
     interface Presenter{
         void attachView(ResultPresenter.View view);

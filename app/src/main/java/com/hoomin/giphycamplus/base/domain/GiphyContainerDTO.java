@@ -13,6 +13,15 @@ public class GiphyContainerDTO extends RealmObject implements Serializable {
     private GiphyImageDTO fixed_height_still;
     private GiphyImageDTO original;
     private GiphyImageDTO fixed_height_downsampled;
+    private GiphyImageDTO fixed_height_small;
+
+    public GiphyImageDTO getFixed_height_small() {
+        return fixed_height_small;
+    }
+
+    public void setFixed_height_small(GiphyImageDTO fixed_height_small) {
+        this.fixed_height_small = fixed_height_small;
+    }
 
     public GiphyImageDTO getFixed_height_downsampled() {
         return fixed_height_downsampled;

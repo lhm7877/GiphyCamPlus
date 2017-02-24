@@ -2,7 +2,7 @@ package com.hoomin.giphycamplus.base.util;
 
 import android.graphics.Bitmap;
 import android.view.Gravity;
-import android.widget.ImageView;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.hoomin.giphycamplus.MyApplication;
@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.Queue;
 
+import uk.co.senab.photoview.PhotoView;
+
 /**
  * Created by Hooo on 2017-02-11.
  */
@@ -20,28 +22,37 @@ public class Sticker {
     private GifDecoder gifDecoder;
     private GiphyImageDTO giphyImageDTO;
     private InputStream inputStream;
-    private ImageView imageView;
+    //    private ImageView imageView;
+    private PhotoView photoView;
 
 
     private Queue<Bitmap> gifFrames = new LinkedList<>();
     private int frameCount;
-    public Sticker(GiphyImageDTO imageDTO){
+
+    public Sticker(GiphyImageDTO imageDTO) {
         this.giphyImageDTO = imageDTO;
         init();
     }
-    private void init(){
+
+    private void init() {
         gifDecoder = new GifDecoder();
 //        gifDecoder.read(ImageManager.getInputStreamfromGif(mContext,giphyImageDTO));
 
-        imageView = new ImageView(MyApplication.getMyContext());
+//        imageView = new ImageView(MyApplication.getMyContext());
+//        photoView = new PhotoView(MyApplication.getMyContext());
+//        photoView.setMinimumScale(0.1f);
+//        photoView.setMaximumScale(2.0f);
+
 
         //ImageView의 크기 지정(drag시 크기 변화 방지)
 //        final float scale = MyApplication.getMyContext().getResources().getDisplayMetrics().density;
 //        int dpWidthInPx = (int) (200 * scale);
 //        int dpHeightInPx = (int) (200 * scale);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200, 200);
-        layoutParams.gravity= Gravity.CENTER;
-        imageView.setLayoutParams(layoutParams);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(200,200);
+        photoView = new PhotoView(MyApplication.getMyContext());
+        layoutParams.gravity = Gravity.CENTER;
+        photoView.setLayoutParams(layoutParams);
+//        imageView.setLayoutParams(layoutParams);
     }
 
     public Queue<Bitmap> getGifFrames() {
@@ -73,12 +84,19 @@ public class Sticker {
         this.inputStream = inputStream;
     }
 
-    public ImageView getImageView() {
-        return imageView;
+    //    public ImageView getImageView() {
+//        return imageView;
+//    }
+//
+//    public void setImageView(ImageView imageView) {
+//        this.imageView = imageView;
+//    }
+    public PhotoView getPhotoView() {
+        return photoView;
     }
 
-    public void setImageView(ImageView imageView) {
-        this.imageView = imageView;
+    public void setPhotoView(PhotoView photoView) {
+        this.photoView = photoView;
     }
 
     public GifDecoder getGifDecoder() {

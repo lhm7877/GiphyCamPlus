@@ -20,6 +20,7 @@ import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
 
 import java.io.Serializable;
 
+import butterknife.BindView;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import okhttp3.ResponseBody;

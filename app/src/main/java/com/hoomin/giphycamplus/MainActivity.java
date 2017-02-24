@@ -1,6 +1,7 @@
 package com.hoomin.giphycamplus;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -21,6 +22,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -33,6 +35,8 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.hoomin.giphycamplus.result.view.ResultActivity;
 import com.hoomin.giphycamplus.base.util.PermissionCheck;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,6 +47,7 @@ import java.io.OutputStream;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnTouch;
 import io.realm.Realm;
 
 import static com.hoomin.giphycamplus.base.util.ImageManager.saveBitmapToJpeg;
@@ -50,61 +55,80 @@ import static com.hoomin.giphycamplus.base.util.ImageManager.saveBitmapToJpeg;
 public class MainActivity extends AppCompatActivity {
     @BindView(R.id.activity_main)
     protected FrameLayout activity_main;
-    @BindView(R.id.btn_save)
-    protected Button btn_save;
-    @BindView(R.id.btn_result)
-    protected Button btn_result;
-    @BindView(R.id.btn_camera)
-    protected Button btn_camera;
-//    @BindView(R.id.cp_main)
-//    CameraPreview surfaceView;
+
     @BindView(R.id.sfv_main)
     protected SurfaceView sfv_main;
 
-    private String albumImagePath;
-private MyCamera myCamera;
-
+    private MyCamera myCamera;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        DisplayMetrics dm = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        Log.d("debug", "Screen inches : " + dm.widthPixels + " " + dm.heightPixels);
+
+        Log.i("LifeCycle", "onCreate");
         init();
     }
 
     private void init() {
         PermissionCheck.checkPermission(this);
-        myCamera = new MyCamera(this,sfv_main);
 //        SurfaceHolder holder = surfaceView.getHolder();
 //        holder.addCallback(surfaceView);
 //        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        myCamera = new MyCamera(this, sfv_main);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.i("LifeCycle", "onResume");
+        if(myCamera.camera==null){
+            myCamera = new MyCamera(this, sfv_main);
+            sfv_main.setVisibility(View.VISIBLE);
+        }
 
     }
+
+    @Override
+    protected void onPause() {
+        Log.i("LifeCycle", "onPause");
+        super.onPause();
+        if(myCamera.camera!=null){
+            myCamera.camera.release();
+            myCamera.surfaceHolder.removeCallback(myCamera.surfaceListener);
+            myCamera.camera=null;
+            sfv_main.setVisibility(View.INVISIBLE);
+        }
+//        myCamera.camera.stopPreview();
+//        myCamera.camera.release();
+
+    }
+
     @OnClick(R.id.btn_camera)
-    void clickCamera(){
+    void clickCamera() {
         myCamera.takePicture();
     }
-//    @OnClick(R.id.btn_camera)
-//    void clickCamera(){
-//        surfaceView.takePhoto(new Camera.PictureCallback() {
-//            @Override
-//            public void onPictureTaken(byte[] data, Camera camera) {
-//                Bitmap bitmap = BitmapFactory.decodeByteArray(data,0,data.length);
-//                String url = saveBitmapToJpeg(MyApplication.getMyContext(),bitmap);
-//                Intent intent = new Intent(MainActivity.this,ResultActivity.class);
-//                intent.putExtra("capturedBaseImage",url);
-//                startActivity(intent);
-//                Log.v("","");
-//            }
-//        });
-//    }
 
 
-
-    @OnClick(R.id.btn_result)
+    @OnClick(R.id.btn_gallery)
     void clickResult() {
         doTakeAlbumAction();
+
+    }
+
+    private void startCropImageActivity(Uri imageUri) {
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setAllowRotation(false)
+                .setAspectRatio(dm.widthPixels, dm.heightPixels)
+                .setFixAspectRatio(true)
+                .start(this);
     }
 
     //테스트 저장 버튼
@@ -146,7 +170,6 @@ private MyCamera myCamera;
         // 앨범 호출
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
-        intent.putExtra("activity",1);
         startActivityForResult(intent, 0);
     }
 
@@ -155,11 +178,28 @@ private MyCamera myCamera;
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case 0: {
-                Uri uri = data.getData();
-                File imageFile = new File(getRealPathFromURI(uri));
-                Intent intent = new Intent(this, ResultActivity.class);
-                intent.putExtra("baseImage",imageFile);
-                startActivity(intent);
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri uri = data.getData();
+                    startCropImageActivity(uri);
+//                    File imageFile = new File(getRealPathFromURI(uri));
+//                    Intent intent = new Intent(this, ResultActivity.class);
+//                    intent.putExtra("activity",1);
+//                    intent.putExtra("baseImage", imageFile);
+//                    startActivity(intent);
+                }
+                break;
+            }
+            case CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE: {
+                CropImage.ActivityResult result = CropImage.getActivityResult(data);
+                if (resultCode == RESULT_OK) {
+                    String url = getRealPathFromURI(result.getUri());
+                    Intent intent = new Intent(this, ResultActivity.class);
+                    intent.putExtra("baseImage", url);
+                    startActivity(intent);
+                } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                    Exception error = result.getError();
+                }
+                break;
             }
         }
     }
@@ -201,7 +241,7 @@ private MyCamera myCamera;
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        Log.v("jyp","onConfigurationChanged()");
+        Log.v("jyp", "onConfigurationChanged()");
         super.onConfigurationChanged(newConfig);
     }
 
