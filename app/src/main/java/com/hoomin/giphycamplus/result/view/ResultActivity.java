@@ -1,6 +1,5 @@
 package com.hoomin.giphycamplus.result.view;
 
-import android.content.ClipData;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -12,13 +11,10 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.hoomin.giphycamplus.MyApplication;
 import com.hoomin.giphycamplus.R;
-import com.hoomin.giphycamplus.base.util.ImageManager;
 import com.hoomin.giphycamplus.base.util.Sticker;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenter;
 import com.hoomin.giphycamplus.result.presenter.ResultPresenterImpl;
@@ -43,12 +39,15 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageView iv_base;
     @BindView(R.id.ibtn_sticker)
     protected ImageButton ibtn_sticker;
+    @BindView(R.id.ibtn_sticker_filled)
+    protected ImageButton ibtn_sticker_filled;
     @BindView(R.id.ibtn_save)
     protected ImageButton ibtn_save;
     @BindView(R.id.ibtn_plus)
     protected ImageButton ibtn_plus;
     @BindView(R.id.ibtn_minus)
     protected ImageButton ibtn_minus;
+
 
 
     private ArrayList<Sticker> stickers;
@@ -75,6 +74,13 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
         ButterKnife.bind(this);
         init();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ibtn_sticker.setBackgroundResource(R.drawable.sticker100);
+        ibtn_sticker_filled.setBackgroundResource(R.drawable.stickerfilled100);
     }
 
     private void init() {
@@ -117,16 +123,20 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     void clickSave() {
         resultPresenter.saveImage(albumImageFile, stickers);
     }
+
+
     @OnClick(R.id.ibtn_sticker_filled)
     void clickStickerFilled(){
         isFilled = true;
         resultPresenter.loadSticker(isFilled);
+        ibtn_sticker.setBackgroundResource(R.drawable.stickerpressed);
     }
 
     @OnClick(R.id.ibtn_sticker)
     void clickSticker() {
         isFilled = false;
         resultPresenter.loadSticker(isFilled);
+        ibtn_sticker_filled.setBackgroundResource(R.drawable.stickerfilledpressed);
     }
 
     @OnClick(R.id.ibtn_back)void backButton(){
@@ -135,9 +145,10 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
 
     @Override
-    public void updateReaction(Response<?> response) {
+    public void updateReaction(Response<?> response, Boolean isFilled) {
         Intent intent = new Intent(this, StickerListActivity.class);
-        intent.putExtra("isFilled",isFilled);
+        Log.i("isFilleResult", String.valueOf(this.isFilled));
+        intent.putExtra("isFilled", isFilled);
         startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
     }
 

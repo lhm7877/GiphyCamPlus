@@ -66,7 +66,16 @@ public class StickerListActivity extends Activity {
     }
 
     private void init() {
-        isFilled = getIntent().getBooleanExtra("isFilled",true);
+        isFilled = getIntent().getBooleanExtra("isFlled",true);
+        if(isFilled){
+            Log.i("isFilled", String.valueOf(isFilled));
+            ibtn_sticker_in_listview.setBackgroundResource(R.drawable.stickerpressed);
+        }else{
+            Log.i("isFilled", String.valueOf(isFilled));
+            ibtn_sticker_filled_in_listview.setBackgroundResource(R.drawable.stickerfilledpressed);
+        }
+
+
         mRealm = Realm.getDefaultInstance();
         final RealmResults<GiphyDataDTO> giphyDataDTOs = mRealm.where(GiphyDataDTO.class).findAll();
         rv_layoutManager = new GridLayoutManager(this,4);
@@ -139,6 +148,10 @@ public class StickerListActivity extends Activity {
         isFilled = false;
         ibtn_sticker_filled_in_listview.setBackgroundResource(R.drawable.stickerfilledpressed);
         ibtn_sticker_in_listview.setBackgroundResource(R.drawable.sticker100);
+    }
+
+    @OnClick(R.id.ibtn_back_in_listview) void clickBack(){
+        finish();
     }
 
 

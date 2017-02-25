@@ -67,11 +67,11 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
     }
 
     @Override
-    public void update(Response<?> response) {
+    public void update(Response<?> response, Boolean isFilled) {
         if (response.body() == null) {
             return;
         } else if (response.body() != null) {
-            view.updateReaction(response);
+            view.updateReaction(response,isFilled);
             this.response = response;
         }
     }

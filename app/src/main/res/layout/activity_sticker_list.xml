@@ -8,6 +8,14 @@
     tools:context="com.hoomin.giphycamplus.stickerList.StickerListActivity">
 
     <ImageButton
+        android:id="@+id/ibtn_back_in_listview"
+        android:background="@drawable/back100"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="10dp"/>
+
+
+    <ImageButton
         android:id="@+id/ibtn_sticker_in_listview"
         android:layout_width="40dp"
         android:layout_height="40dp"

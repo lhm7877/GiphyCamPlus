@@ -18,7 +18,7 @@ import retrofit2.Response;
 
 public interface ResultPresenter {
     interface View{
-        void updateReaction(Response<?> response);
+        void updateReaction(Response<?> response, Boolean isFilled);
         void addSticker(Sticker sticker);
     }
     interface Presenter{
