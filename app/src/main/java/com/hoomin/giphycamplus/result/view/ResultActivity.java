@@ -148,7 +148,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     public void updateReaction(Response<?> response, Boolean isFilled) {
         Intent intent = new Intent(this, StickerListActivity.class);
         Log.i("isFilleResult", String.valueOf(this.isFilled));
-        intent.putExtra("isFilled", isFilled);
+        intent.putExtra("isFilled", this.isFilled);
         startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
     }
 

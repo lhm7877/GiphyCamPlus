@@ -66,7 +66,7 @@ public class StickerListActivity extends Activity {
     }
 
     private void init() {
-        isFilled = getIntent().getBooleanExtra("isFlled",true);
+        isFilled = getIntent().getBooleanExtra("isFlled",false);
         if(isFilled){
             Log.i("isFilled", String.valueOf(isFilled));
             ibtn_sticker_in_listview.setBackgroundResource(R.drawable.stickerpressed);
