@@ -1,6 +1,7 @@
 package com.hoomin.giphycamplus.result.presenter;
 
 import android.util.Log;
+import android.view.View;
 
 import com.hoomin.giphycamplus.result.model.GiphyModel;
 import com.hoomin.giphycamplus.base.util.ImageManager;
@@ -66,12 +67,13 @@ public class ResultPresenterImpl implements ResultPresenter.Presenter, GiphyMode
 
     }
 
+
     @Override
-    public void update(Response<?> response, Boolean isFilled) {
+    public void update(Response<?> response) {
         if (response.body() == null) {
             return;
         } else if (response.body() != null) {
-            view.updateReaction(response,isFilled);
+            view.updateReaction(response);
             this.response = response;
         }
     }

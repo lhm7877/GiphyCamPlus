@@ -49,7 +49,6 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
     protected ImageButton ibtn_minus;
 
 
-
     private ArrayList<Sticker> stickers;
 
     //TODO: 어떤거 쓰지
@@ -87,10 +86,10 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         resultPresenter = new ResultPresenterImpl();
         resultPresenter.attachView(this);
 
-        Log.i("lifecycle","result OnCreate");
+        Log.i("lifecycle", "result OnCreate");
         String url = getIntent().getStringExtra("baseImage");
         albumImageFile = new File(url);
-        Log.i("baseImage",url);
+        Log.i("baseImage", url);
         Bitmap mBitmap = BitmapFactory.decodeFile(url);
         iv_base.setImageBitmap(mBitmap);
         //같은 url 재사용 시 이미지가 안바뀜
@@ -101,17 +100,41 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         ibtn_plus.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction() & MotionEvent.ACTION_MASK) {
-                    case MotionEvent.ACTION_DOWN :{
-                        ibtn_plus.setBackgroundResource(R.drawable.plusfilled120);
-                        currentPhotoview.getLayoutParams().height *= 1.1;
-                        currentPhotoview.getLayoutParams().width *= 1.1;
-                        return true;
+                if (currentPhotoview != null) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN: {
+                            ibtn_plus.setBackgroundResource(R.drawable.plusfilled120);
+                            currentPhotoview.getLayoutParams().height *= 1.1;
+                            currentPhotoview.getLayoutParams().width *= 1.1;
+                            currentPhotoview.requestLayout();
+                            break;
+                        }
+                        case MotionEvent.ACTION_UP: {
+                            ibtn_plus.setBackgroundResource(R.drawable.plus120);
+                            break;
+                        }
                     }
-                    case MotionEvent.ACTION_UP : {
+                }
+                return true;
+            }
+        });
 
-                        ibtn_plus.setBackgroundResource(R.drawable.plus120);
-                        return true;
+        ibtn_minus.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (currentPhotoview != null) {
+                    switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                        case MotionEvent.ACTION_DOWN: {
+                            ibtn_minus.setBackgroundResource(R.drawable.minusfilled120);
+                            currentPhotoview.getLayoutParams().height *= 0.9;
+                            currentPhotoview.getLayoutParams().width *= 0.9;
+                            currentPhotoview.requestLayout();
+                            break;
+                        }
+                        case MotionEvent.ACTION_UP: {
+                            ibtn_minus.setBackgroundResource(R.drawable.minus120);
+                            break;
+                        }
                     }
                 }
                 return true;
@@ -126,7 +149,7 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
 
 
     @OnClick(R.id.ibtn_sticker_filled)
-    void clickStickerFilled(){
+    void clickStickerFilled() {
         isFilled = true;
         resultPresenter.loadSticker(isFilled);
         ibtn_sticker.setBackgroundResource(R.drawable.stickerpressed);
@@ -139,59 +162,33 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
         ibtn_sticker_filled.setBackgroundResource(R.drawable.stickerfilledpressed);
     }
 
-    @OnClick(R.id.ibtn_back)void backButton(){
+    @OnClick(R.id.ibtn_back)
+    void backButton() {
         finish();
     }
 
 
     @Override
-    public void updateReaction(Response<?> response, Boolean isFilled) {
+    public void updateReaction(Response<?> response) {
         Intent intent = new Intent(this, StickerListActivity.class);
-        Log.i("isFilleResult", String.valueOf(this.isFilled));
         intent.putExtra("isFilled", this.isFilled);
         startActivityForResult(intent, SELECT_STICKER_REQUEST_CODE);
     }
 
 
-
-
     @Override
     public void addSticker(Sticker sticker) {
         photoView = sticker.getPhotoView();
-
-//        iv_sticker = sticker.getImageView();
-//        photoView = sticker.getPhotoView();
         Glide.with(this)
                 .load(sticker.getGiphyImageDTO().getUrl())
                 .asGif()
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(photoView);
         photoView.setOnTouchListener(myTouchListener);
-        photoView.setTag(0);
+        photoView.setTag(89);
         currentPhotoview = photoView;
-//        iv_sticker.setTag(stickerIndex);
-        //결과 화면의 FrameLayout에 Imageview 추가
         activity_result.addView(photoView);
-        //터치 리스너 등록
-//        photoView.setOnTouchListener(testListener);
-//        gestureImageView.setOnTouchListener(testListener);
         stickers.add(sticker);
-//        iv_Stickers.add(iv_sticker);
-//        imageDTO.setImageView(iv_sticker);
-//        giphyImageDTOs.add(imageDTO);
-
-
-//        mAttacher = new PhotoViewAttacher(photoView);
-//        mAttacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
-//            @Override
-//            public void onViewTap(View view, float x, float y) {
-//                Log.i("mylog","OnViewTapListener()");
-//                view.setOnTouchListener(testListener);
-//            }
-//        });
-//        mAttacher.update();
-
-
     }
 
     View.OnTouchListener myTouchListener = new View.OnTouchListener() {
@@ -205,7 +202,8 @@ public class ResultActivity extends AppCompatActivity implements ResultPresenter
             FrameLayout.LayoutParams layoutParams1 = (FrameLayout.LayoutParams) view.getLayoutParams();
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
-                    Log.i("mylog", "ActionDown");
+                    currentPhotoview = (PhotoView) view;
+                    Log.i("currentpv", String.valueOf(currentPhotoview.getWidth()));
                     xDelta = x - layoutParams1.leftMargin;
                     yDelta = y - layoutParams1.topMargin;
                     return true;

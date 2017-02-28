@@ -50,6 +50,8 @@ public class StickerListActivity extends Activity {
 
     private Boolean isFilled = true;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,12 +68,10 @@ public class StickerListActivity extends Activity {
     }
 
     private void init() {
-        isFilled = getIntent().getBooleanExtra("isFlled",false);
+        isFilled = getIntent().getBooleanExtra("isFilled",false);
         if(isFilled){
-            Log.i("isFilled", String.valueOf(isFilled));
             ibtn_sticker_in_listview.setBackgroundResource(R.drawable.stickerpressed);
         }else{
-            Log.i("isFilled", String.valueOf(isFilled));
             ibtn_sticker_filled_in_listview.setBackgroundResource(R.drawable.stickerfilledpressed);
         }
 

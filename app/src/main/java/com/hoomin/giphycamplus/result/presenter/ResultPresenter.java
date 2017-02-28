@@ -2,6 +2,7 @@ package com.hoomin.giphycamplus.result.presenter;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.view.View;
 import android.widget.ImageView;
 
 import com.hoomin.giphycamplus.base.domain.GiphyImageDTO;
@@ -18,7 +19,7 @@ import retrofit2.Response;
 
 public interface ResultPresenter {
     interface View{
-        void updateReaction(Response<?> response, Boolean isFilled);
+        void updateReaction(Response<?> response);
         void addSticker(Sticker sticker);
     }
     interface Presenter{

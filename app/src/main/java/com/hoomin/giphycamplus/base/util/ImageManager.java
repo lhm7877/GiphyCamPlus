@@ -67,7 +67,11 @@ public class ImageManager {
         for (Sticker sticker : stickers) {
             Bitmap stickerFrame = sticker.getGifDecoder().getFrame(i);
             scaledBitmap[stickers.indexOf(sticker)] =
-                    Bitmap.createScaledBitmap(stickerFrame, (int) (stickerFrame.getWidth() * xRatio), (int) (stickerFrame.getHeight() * yRatio), false);
+                    Bitmap.createScaledBitmap(stickerFrame, (int) (sticker.getPhotoView().getWidth() * xRatio), (int) (sticker.getPhotoView().getHeight() * yRatio), false);
+
+//            scaledBitmap[stickers.indexOf(sticker)] =
+//                    Bitmap.createScaledBitmap(stickerFrame, (int) (stickerFrame.getWidth() * xRatio), (int) (stickerFrame.getHeight() * yRatio), false);
+
         }
         Log.i("sizeCheck2", scaledBitmap[0].getWidth() + " " + scaledBitmap[0].getHeight());
 

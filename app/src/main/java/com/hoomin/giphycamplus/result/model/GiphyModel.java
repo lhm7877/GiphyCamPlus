@@ -35,7 +35,6 @@ public class GiphyModel {
     //    private GiphyDataDTO GiphyRepoDTO = null;
     private GiphyModel.GiphyModelDataChange modelDataChange;
     private Realm mRealm;
-    private Boolean isFilled;
 
     public interface GiphyRepoService {
         Retrofit retrofit = new Retrofit.Builder()
@@ -64,7 +63,7 @@ public class GiphyModel {
 
 
     public interface GiphyModelDataChange {
-        void update(Response<?> response, Boolean isFilled);
+        void update(Response<?> response);
     }
 
     public void setOnChangeListener(GiphyModel.GiphyModelDataChange dataChange) {
@@ -72,7 +71,6 @@ public class GiphyModel {
     }
 
     public void callSticker(Boolean isFilled) {
-        this.isFilled = isFilled;
         GiphyModel.GiphyRepoService giphyRepoService = GiphyRepoService.retrofit.create(GiphyModel.GiphyRepoService.class);
         String stringSticker = "";
         if(!isFilled){
@@ -100,7 +98,7 @@ public class GiphyModel {
                 mRealm.commitTransaction();
 
                 if (modelDataChange != null) {
-                    modelDataChange.update(response,isFilled);
+                    modelDataChange.update(response);
                 }
             }
 //            Log.i("intent","response 실패");
